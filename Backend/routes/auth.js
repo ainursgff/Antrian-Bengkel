@@ -91,6 +91,42 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /api/auth/forgot-password — Cek email untuk reset password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, error: 'Email wajib diisi' });
+  }
+
+  try {
+    const [rows] = await pool.query('SELECT id FROM users WHERE email = ? AND is_aktif = 1', [email]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Email tidak ditemukan di sistem' });
+    }
+    return res.json({ success: true, message: 'Email terverifikasi' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  }
+});
+
+// POST /api/auth/reset-password — Ubah password baru berdasarkan email
+router.post('/reset-password', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ success: false, error: 'Email dan password baru wajib diisi' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email]);
+    return res.json({ success: true, message: 'Password Anda berhasil diperbarui!' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+  }
+});
+
 // POST /api/auth/logout
 router.post('/logout', (req, res) => {
   const authHeader = req.headers.authorization;
