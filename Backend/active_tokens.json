@@ -1,0 +1,23 @@
+{
+  "94594ab4b31db23327de8380bf71cb6191570c52bb07cc778bc0d9d638148634": {
+    "userId": 3,
+    "role": "admin",
+    "nama": "zara",
+    "email": "zara@gmail.com",
+    "noHp": "088264926"
+  },
+  "3562466937fcef20574703fc8ee7a856600ae137fab36e88946230cdcc3c8d58": {
+    "userId": 12,
+    "role": "montir",
+    "nama": "Fash",
+    "email": "Fash@gmail.com",
+    "noHp": "0856453554"
+  },
+  "46f455e41de9083a6a81c2cc6a1ea28405a5c5a0825448d5f3f3cf360f00f6f8": {
+    "userId": 4,
+    "role": "pelanggan",
+    "nama": "Assegaf",
+    "email": "Asg@gmail.com",
+    "noHp": "08764746743"
+  }
+}

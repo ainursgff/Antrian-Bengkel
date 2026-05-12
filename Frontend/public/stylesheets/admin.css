@@ -70,7 +70,16 @@ body {
   margin-top: 2px;
 }
 
-.sidebar-nav { flex: 1; padding: 24px 16px; overflow-y: auto; }
+.sidebar-nav { 
+  flex: 1; 
+  padding: 24px 16px; 
+  overflow-y: auto; 
+  scrollbar-width: none; /* Sembunyikan scrollbar di Firefox */
+  -ms-overflow-style: none; /* Sembunyikan scrollbar di IE/Edge */
+}
+.sidebar-nav::-webkit-scrollbar {
+  display: none; /* Sembunyikan scrollbar di Chrome/Safari/Opera */
+}
 .nav-label {
   font-size: 0.72rem;
   font-weight: 800;
@@ -387,3 +396,101 @@ body {
 .laporan-row-item .count { font-weight: 800; color: var(--accent); font-size: 1.1rem; }
 .progress-bar-custom { height: 6px; background: var(--border); border-radius: 10px; margin-top: 6px; overflow: hidden; }
 .progress-fill { height: 100%; background: linear-gradient(135deg, var(--accent), #fb923c); border-radius: 10px; }
+
+/* ============================================================
+   PREMIUM UX/UI OVERRIDES FOR HIGH DENSITY TABLES & CONTRAST
+   ============================================================ */
+
+/* 1. Custom Smooth Table Styling */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.table th {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  color: #334155 !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  background-color: #f8fafc !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  padding: 16px 20px !important;
+  white-space: nowrap;
+}
+.table td {
+  padding: 16px 20px !important;
+  color: #1e293b !important;
+  font-size: 0.88rem;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+.table-hover tbody tr {
+  transition: background-color 0.15s ease;
+}
+.table-hover tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+/* 2. Better contrast for secondary text */
+.text-muted, td.text-muted {
+  color: #475569 !important; /* Higher contrast than #64748b */
+  font-weight: 500;
+}
+
+/* 3. Modern Scrollbars for Responsive Tables */
+.table-responsive {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  border: 2px solid #f8fafc;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 4. Select Dropdown Design Polish */
+select.form-control-custom, .table select {
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+select.form-control-custom:hover, .table select:hover {
+  border-color: var(--accent) !important;
+}
+
+/* 5. Sidebar Tweaks for Premium Feel */
+.sidebar {
+  background: #0f172a !important; /* Rich Dark Background */
+}
+.sidebar-logo {
+  border-bottom: 1px solid #1e293b;
+}
+.sidebar-logo h4 span {
+  color: #f97316 !important;
+}
+.nav-btn {
+  color: #94a3b8 !important;
+}
+.nav-btn:hover {
+  background: #1e293b !important;
+  color: #fff !important;
+}
+.nav-btn.active {
+  background: linear-gradient(135deg, #f97316, #fb923c) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.3) !important;
+}
+

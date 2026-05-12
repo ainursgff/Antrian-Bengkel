@@ -2,9 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import CustomerPage from './pages/CustomerPage';
 import AdminPage from './pages/AdminPage';
-import AdminLoginPage from './pages/AdminLoginPage';
+import MontirPage from './pages/MontirPage';
 
 function App() {
   return (
@@ -12,10 +11,9 @@ function App() {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/customer" element={<CustomerPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/montir" element={<MontirPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

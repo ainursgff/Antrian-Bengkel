@@ -15,9 +15,11 @@ const getTodayLocal = () => {
 
 // Helper: generate nomor antrian (A001, A002, dst. per hari per layanan)
 const generateNomorAntrian = async (layananId, tanggal) => {
+  // Karena sekarang layanan_id bisa berisi multi id "1,2", urutan kita hitung secara global per hari saja, 
+  // atau kita ambil id pertama sebagai representasi. Kita buat A001 global per hari saja.
   const [rows] = await pool.query(
-    `SELECT COUNT(*) as total FROM antrian WHERE layanan_id = ? AND tanggal = ? AND status != 'dibatalkan'`,
-    [layananId, tanggal]
+    `SELECT COUNT(*) as total FROM antrian WHERE tanggal = ?`,
+    [tanggal]
   );
   const seq = rows[0].total + 1;
   return `A${String(seq).padStart(3, '0')}`;
@@ -29,23 +31,43 @@ router.get('/', authMiddleware, async (req, res) => {
     let query, params;
 
     if (req.user.role === 'admin') {
-      // Admin melihat semua antrian hari ini
       const tanggal = req.query.tanggal || getTodayLocal();
       query = `
-        SELECT a.*, u.nama AS nama_pelanggan, u.no_hp, l.nama_layanan, l.estimasi_menit
+        SELECT a.*, u.nama AS nama_pelanggan, u.no_hp, u.email, 
+               m.nama AS nama_montir,
+               (SELECT GROUP_CONCAT(nama_layanan SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS nama_layanan,
+               (SELECT SUM(estimasi_menit) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS estimasi_menit,
+               (SELECT SUM(harga) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS total_harga,
+               (SELECT GROUP_CONCAT(CONCAT(nama_layanan, ' (Rp ', harga, ')') SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS rincian_harga
         FROM antrian a
         JOIN users u ON a.user_id = u.id
-        JOIN layanan l ON a.layanan_id = l.id
+        LEFT JOIN users m ON a.montir_id = m.id
         WHERE a.tanggal = ?
         ORDER BY a.created_at ASC
       `;
       params = [tanggal];
-    } else {
-      // Pelanggan hanya lihat antrian milik sendiri
+    } else if (req.user.role === 'montir') {
+      const tanggal = req.query.tanggal || getTodayLocal();
       query = `
-        SELECT a.*, l.nama_layanan, l.estimasi_menit
+        SELECT a.*, u.nama AS nama_pelanggan, u.no_hp, u.email, 
+               (SELECT GROUP_CONCAT(nama_layanan SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS nama_layanan,
+               (SELECT SUM(estimasi_menit) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS estimasi_menit,
+               (SELECT SUM(harga) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS total_harga,
+               (SELECT GROUP_CONCAT(CONCAT(nama_layanan, ' (Rp ', harga, ')') SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS rincian_harga
         FROM antrian a
-        JOIN layanan l ON a.layanan_id = l.id
+        JOIN users u ON a.user_id = u.id
+        WHERE a.tanggal = ? AND a.montir_id = ?
+        ORDER BY a.created_at ASC
+      `;
+      params = [tanggal, req.user.userId];
+    } else {
+      query = `
+        SELECT a.*, 
+               (SELECT GROUP_CONCAT(nama_layanan SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS nama_layanan,
+               (SELECT SUM(estimasi_menit) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS estimasi_menit,
+               (SELECT SUM(harga) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS total_harga,
+               (SELECT GROUP_CONCAT(CONCAT(nama_layanan, ' (Rp ', harga, ')') SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS rincian_harga
+        FROM antrian a
         WHERE a.user_id = ?
         ORDER BY a.created_at DESC
         LIMIT 20
@@ -65,12 +87,14 @@ router.get('/', authMiddleware, async (req, res) => {
 router.get('/aktif', authMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT a.*, l.nama_layanan, l.estimasi_menit,
+      SELECT a.*, 
+             (SELECT GROUP_CONCAT(nama_layanan SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS nama_layanan,
+             (SELECT SUM(estimasi_menit) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS estimasi_menit,
+             (SELECT SUM(harga) FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS total_harga,
+             (SELECT GROUP_CONCAT(CONCAT(nama_layanan, ' (Rp ', harga, ')') SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS rincian_harga,
              (SELECT COUNT(*) FROM antrian a2 
-              WHERE a2.tanggal = a.tanggal AND a2.layanan_id = a.layanan_id 
-              AND a2.status = 'menunggu' AND a2.created_at < a.created_at) AS posisi_antrian
+              WHERE a2.tanggal = a.tanggal AND a2.status = 'menunggu' AND a2.created_at < a.created_at) AS posisi_antrian
       FROM antrian a
-      JOIN layanan l ON a.layanan_id = l.id
       WHERE a.user_id = ? AND a.status IN ('menunggu','dipanggil','sedang_dilayani') AND a.tanggal = ?
       ORDER BY a.created_at DESC LIMIT 1
     `, [req.user.userId, getTodayLocal()]);
@@ -84,16 +108,19 @@ router.get('/aktif', authMiddleware, async (req, res) => {
 
 // POST /api/antrian — UC3: Ambil nomor antrian (pelanggan)
 router.post('/', authMiddleware, async (req, res) => {
-  const { layanan_id, catatan } = req.body;
+  const { layanan_id, kendaraan, catatan } = req.body;
 
-  if (!layanan_id) {
-    return res.status(400).json({ error: 'Layanan wajib dipilih' });
+  if (!layanan_id || layanan_id.length === 0) {
+    return res.status(400).json({ error: 'Layanan wajib dipilih minimal 1' });
   }
+
+  // Jika frontend mengirim array, jadikan string comma-separated
+  const layananIdsStr = Array.isArray(layanan_id) ? layanan_id.join(',') : layanan_id;
 
   try {
     const tanggal = getTodayLocal();
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0=Minggu, 1=Senin, dst.
+    const dayOfWeek = now.getDay(); 
 
     // Cek jadwal operasional hari ini
     const [jadwalRows] = await pool.query(
@@ -106,7 +133,18 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const jadwal = jadwalRows[0];
 
-    // Cek apakah user sudah punya antrian aktif hari ini untuk layanan ini
+    // Validasi Jam Operasional & Aturan 30 Menit
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const jamBukaParts = jadwal.jam_buka.split(':').map(Number);
+    const jamBukaMinutes = jamBukaParts[0] * 60 + jamBukaParts[1];
+    const jamTutupParts = jadwal.jam_tutup.split(':').map(Number);
+    const jamTutupMinutes = jamTutupParts[0] * 60 + jamTutupParts[1];
+
+    if (currentMinutes >= (jamTutupMinutes - 30)) {
+      return res.status(400).json({ error: `Pendaftaran ditutup! Pendaftaran dihentikan 30 menit sebelum jam tutup (${jadwal.jam_tutup.substring(0,5)} WIB).` });
+    }
+
+    // Cek apakah user sudah punya antrian aktif hari ini
     const [existingAntrian] = await pool.query(
       `SELECT id FROM antrian WHERE user_id = ? AND tanggal = ? AND status IN ('menunggu','dipanggil','sedang_dilayani')`,
       [req.user.userId, tanggal]
@@ -115,34 +153,61 @@ router.post('/', authMiddleware, async (req, res) => {
       return res.status(409).json({ error: 'Anda masih memiliki antrian aktif hari ini.' });
     }
 
-    // Cek layanan aktif
-    const [layananRows] = await pool.query('SELECT * FROM layanan WHERE id = ? AND is_aktif = 1', [layanan_id]);
-    if (layananRows.length === 0) {
+    // Cek layanan aktif dan hitung total waktu
+    const [layananRows] = await pool.query(
+      `SELECT SUM(estimasi_menit) as estimasi_menit, GROUP_CONCAT(nama_layanan SEPARATOR ', ') as nama_layanan 
+       FROM layanan WHERE FIND_IN_SET(id, ?) AND is_aktif = 1`, 
+      [layananIdsStr]
+    );
+    
+    if (!layananRows[0] || !layananRows[0].nama_layanan) {
       return res.status(404).json({ error: 'Layanan tidak ditemukan atau tidak aktif' });
     }
 
-    // Generate nomor antrian
-    const nomor_antrian = await generateNomorAntrian(layanan_id, tanggal);
+    const estimasiMenit = Number(layananRows[0].estimasi_menit) || 30;
 
-    // Hitung estimasi slot waktu berdasarkan posisi antrian
-    const [totalToday] = await pool.query(
-      `SELECT COUNT(*) as total FROM antrian WHERE layanan_id = ? AND tanggal = ? AND status != 'dibatalkan'`,
-      [layanan_id, tanggal]
+    // Generate nomor antrian
+    const nomor_antrian = await generateNomorAntrian(layananIdsStr, tanggal);
+
+    // Hitung total beban waktu seluruh bengkel hari ini (Multi-Channel Algorithm)
+    const [totalWaktuRows] = await pool.query(
+      `SELECT SUM(l.estimasi_menit) as total_menit FROM antrian a JOIN layanan l ON FIND_IN_SET(l.id, a.layanan_id) WHERE a.tanggal = ? AND a.status != 'dibatalkan'`,
+      [tanggal]
     );
-    const posisi = totalToday[0].total;
-    const jamBuka = jadwal.jam_buka.split(':').map(Number);
-    const estimasiMenit = layananRows[0].estimasi_menit || 30;
-    const slotMinutes = jamBuka[0] * 60 + jamBuka[1] + posisi * estimasiMenit;
+    const totalMenitHariIni = Number(totalWaktuRows[0].total_menit) || 0;
+    const kuotaMontir = jadwal.kuota_per_slot || 1;
+    
+    // Rata-rata beban per montir
+    let baseMinutes = jamBukaMinutes + Math.floor(totalMenitHariIni / kuotaMontir);
+
+    // Jika antrian sedang sepi (waktu giliran sudah lewat dari waktu saat ini), 
+    // maka langsung dilayani dari waktu saat ini.
+    const slotMinutes = Math.max(baseMinutes, currentMinutes);
+
+    // Tolak jika estimasi layanan selesai melewati jam tutup bengkel
+    if ((slotMinutes + estimasiMenit) > jamTutupMinutes) {
+      return res.status(400).json({ error: 'Maaf, kuota antrian hari ini sudah penuh (melewati jam tutup).' });
+    }
+
     const slotH = Math.floor(slotMinutes / 60);
     const slotM = slotMinutes % 60;
     const slot_waktu = `${String(slotH).padStart(2, '0')}:${String(slotM).padStart(2, '0')}:00`;
 
     // Simpan antrian
     const [result] = await pool.query(
-      `INSERT INTO antrian (user_id, layanan_id, jadwal_id, nomor_antrian, tanggal, slot_waktu, status, catatan)
-       VALUES (?, ?, ?, ?, ?, ?, 'menunggu', ?)`,
-      [req.user.userId, layanan_id, jadwal.id, nomor_antrian, tanggal, slot_waktu, catatan || null]
+      `INSERT INTO antrian (user_id, layanan_id, kendaraan, jadwal_id, nomor_antrian, tanggal, slot_waktu, status, catatan)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'menunggu', ?)`,
+      [req.user.userId, layananIdsStr, kendaraan || null, jadwal.id, nomor_antrian, tanggal, slot_waktu, catatan || null]
     );
+
+    // Simpan relasi fisik ke tabel pivot antrian_layanan untuk memunculkan garis relasi di ERD
+    const individualLayananIds = layananIdsStr.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    for (const lid of individualLayananIds) {
+      await pool.query(
+        'INSERT INTO antrian_layanan (antrian_id, layanan_id) VALUES (?, ?)',
+        [result.insertId, lid]
+      );
+    }
 
     // Buat notifikasi konfirmasi
     await pool.query(
@@ -168,14 +233,13 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/antrian/:id/batalkan — UC5: Batalkan antrian (pelanggan)
+// PUT /api/antrian/:id/batalkan — Batalkan antrian (pelanggan)
 router.put('/:id/batalkan', authMiddleware, async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Pastikan antrian milik user dan status masih menunggu
     const [rows] = await pool.query(
-      `SELECT a.*, l.nama_layanan FROM antrian a JOIN layanan l ON a.layanan_id = l.id WHERE a.id = ?`,
+      `SELECT a.*, (SELECT GROUP_CONCAT(nama_layanan SEPARATOR ', ') FROM layanan WHERE FIND_IN_SET(id, a.layanan_id)) AS nama_layanan FROM antrian a WHERE a.id = ?`,
       [id]
     );
 
@@ -183,7 +247,6 @@ router.put('/:id/batalkan', authMiddleware, async (req, res) => {
 
     const antrian = rows[0];
 
-    // Pelanggan hanya bisa batalkan milik sendiri; admin bisa batalkan semua
     if (req.user.role !== 'admin' && antrian.user_id !== req.user.userId) {
       return res.status(403).json({ error: 'Anda tidak berhak membatalkan antrian ini' });
     }
@@ -192,9 +255,16 @@ router.put('/:id/batalkan', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: `Antrian berstatus '${antrian.status}' tidak dapat dibatalkan` });
     }
 
+    if (req.user.role !== 'admin') {
+      const createdTime = new Date(antrian.created_at).getTime();
+      const now = new Date().getTime();
+      if (now - createdTime > 180000) {
+        return res.status(400).json({ error: 'Waktu pembatalan telah habis (maks 3 menit).' });
+      }
+    }
+
     await pool.query(`UPDATE antrian SET status = 'dibatalkan' WHERE id = ?`, [id]);
 
-    // Buat notifikasi pembatalan
     await pool.query(
       `INSERT INTO notifikasi (antrian_id, pesan, tipe) VALUES (?, ?, 'pembatalan')`,
       [id, `Antrian ${antrian.nomor_antrian} untuk ${antrian.nama_layanan} telah dibatalkan.`]
@@ -207,21 +277,24 @@ router.put('/:id/batalkan', authMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/antrian/:id/panggil — UC8: Panggil antrian (admin)
+// PUT /api/antrian/:id/panggil — UC9: Panggil antrian (admin only)
 router.put('/:id/panggil', adminMiddleware, async (req, res) => {
   const { id } = req.params;
+  const { montir_id } = req.body || {};
+
   try {
-    const [rows] = await pool.query(
-      `SELECT a.*, l.nama_layanan FROM antrian a JOIN layanan l ON a.layanan_id = l.id WHERE a.id = ?`, [id]
-    );
+    const [rows] = await pool.query(`SELECT * FROM antrian WHERE id = ?`, [id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Antrian tidak ditemukan' });
 
     const antrian = rows[0];
-    if (antrian.status !== 'menunggu') {
-      return res.status(400).json({ error: `Status antrian saat ini: ${antrian.status}` });
-    }
+    if (antrian.status !== 'menunggu') return res.status(400).json({ error: 'Hanya status menunggu yang dapat dipanggil' });
 
-    await pool.query(`UPDATE antrian SET status = 'dipanggil' WHERE id = ?`, [id]);
+    const updateQuery = montir_id 
+      ? `UPDATE antrian SET status = 'dipanggil', montir_id = ? WHERE id = ?`
+      : `UPDATE antrian SET status = 'dipanggil' WHERE id = ?`;
+    const updateParams = montir_id ? [montir_id, id] : [id];
+
+    await pool.query(updateQuery, updateParams);
 
     await pool.query(
       `INSERT INTO notifikasi (antrian_id, pesan, tipe) VALUES (?, ?, 'panggilan')`,
@@ -235,8 +308,11 @@ router.put('/:id/panggil', adminMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/antrian/:id/dilayani — Admin: set sedang_dilayani
-router.put('/:id/dilayani', adminMiddleware, async (req, res) => {
+// PUT /api/antrian/:id/dilayani — Admin/Montir: set sedang_dilayani
+router.put('/:id/dilayani', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'montir') {
+    return res.status(403).json({ error: 'Forbidden: Hanya admin atau montir yang dapat memperbarui' });
+  }
   const { id } = req.params;
   try {
     await pool.query(`UPDATE antrian SET status = 'sedang_dilayani' WHERE id = ? AND status = 'dipanggil'`, [id]);
@@ -247,8 +323,11 @@ router.put('/:id/dilayani', adminMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/antrian/:id/selesai — Admin: set selesai
-router.put('/:id/selesai', adminMiddleware, async (req, res) => {
+// PUT /api/antrian/:id/selesai — Admin/Montir: set selesai
+router.put('/:id/selesai', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'montir') {
+    return res.status(403).json({ error: 'Forbidden: Hanya admin atau montir yang dapat memperbarui' });
+  }
   const { id } = req.params;
   try {
     await pool.query(`UPDATE antrian SET status = 'selesai' WHERE id = ?`, [id]);

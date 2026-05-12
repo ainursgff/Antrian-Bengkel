@@ -18,13 +18,13 @@ router.get('/', async (req, res) => {
 
 // POST /api/layanan — UC7: Tambah layanan (admin)
 router.post('/', adminMiddleware, async (req, res) => {
-  const { nama_layanan, deskripsi, estimasi_menit, is_aktif } = req.body;
+  const { nama_layanan, deskripsi, estimasi_menit, harga, is_aktif } = req.body;
   if (!nama_layanan) return res.status(400).json({ error: 'Nama layanan wajib diisi' });
 
   try {
     const [result] = await pool.query(
-      'INSERT INTO layanan (nama_layanan, deskripsi, estimasi_menit, is_aktif) VALUES (?, ?, ?, ?)',
-      [nama_layanan, deskripsi || null, estimasi_menit || 30, is_aktif !== undefined ? is_aktif : 1]
+      'INSERT INTO layanan (nama_layanan, deskripsi, estimasi_menit, harga, is_aktif) VALUES (?, ?, ?, ?, ?)',
+      [nama_layanan, deskripsi || null, estimasi_menit || 30, harga || 0, is_aktif !== undefined ? is_aktif : 1]
     );
     res.status(201).json({ success: true, message: 'Layanan berhasil ditambahkan', id: result.insertId });
   } catch (error) {
@@ -36,12 +36,12 @@ router.post('/', adminMiddleware, async (req, res) => {
 // PUT /api/layanan/:id — UC7: Edit layanan (admin)
 router.put('/:id', adminMiddleware, async (req, res) => {
   const { id } = req.params;
-  const { nama_layanan, deskripsi, estimasi_menit, is_aktif } = req.body;
+  const { nama_layanan, deskripsi, estimasi_menit, harga, is_aktif } = req.body;
 
   try {
     const [result] = await pool.query(
-      'UPDATE layanan SET nama_layanan=?, deskripsi=?, estimasi_menit=?, is_aktif=? WHERE id=?',
-      [nama_layanan, deskripsi || null, estimasi_menit || 30, is_aktif !== undefined ? is_aktif : 1, id]
+      'UPDATE layanan SET nama_layanan=?, deskripsi=?, estimasi_menit=?, harga=?, is_aktif=? WHERE id=?',
+      [nama_layanan, deskripsi || null, estimasi_menit || 30, harga || 0, is_aktif !== undefined ? is_aktif : 1, id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Layanan tidak ditemukan' });
     res.json({ success: true, message: 'Layanan berhasil diperbarui' });
