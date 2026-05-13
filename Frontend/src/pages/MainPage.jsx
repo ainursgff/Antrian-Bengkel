@@ -44,6 +44,17 @@ export default function MainPage() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showAmbilModal, setShowAmbilModal] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [selectedRiwayatItem, setSelectedRiwayatItem] = useState(null);
+
+  const formatTanggalIndo = (tglStr) => {
+    if (!tglStr) return '-';
+    try {
+      const d = new Date(tglStr);
+      if (isNaN(d.getTime())) return tglStr.substring(0, 10);
+      const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    } catch { return tglStr.substring(0, 10); }
+  };
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -631,7 +642,12 @@ export default function MainPage() {
                         {riwayat.map((a, i) => {
                           const s = STATUS_MAP[a.status] || {};
                           return (
-                            <tr key={a.id} style={{ borderTop: '1px solid #e2e8f0', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                            <tr 
+                              key={a.id} 
+                              onClick={() => setSelectedRiwayatItem(a)}
+                              style={{ borderTop: '1px solid #e2e8f0', background: i % 2 === 0 ? '#fff' : '#fafafa', cursor: 'pointer' }}
+                              title="Klik untuk melihat detail kartu"
+                            >
                               <td style={{ padding: '16px 20px', fontWeight: 800, color: '#f97316' }}>{a.nomor_antrian}</td>
                               <td style={{ padding: '16px 20px', fontWeight: 600, color: '#0f172a' }}>
                                 <div>{a.nama_layanan}</div>
@@ -639,7 +655,7 @@ export default function MainPage() {
                                   {a.rincian_harga ? a.rincian_harga.replace(/,/g, ' +') : '-'}
                                 </div>
                               </td>
-                              <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{a.tanggal}</td>
+                              <td style={{ padding: '16px 20px', color: '#64748b', fontSize: '0.9rem' }}>{formatTanggalIndo(a.tanggal)}</td>
                               <td style={{ padding: '16px 20px', fontWeight: 800, color: '#16a34a', fontSize: '0.92rem' }}>
                                 Rp {a.total_harga ? a.total_harga.toLocaleString('id-ID') : '0'}
                               </td>
@@ -656,6 +672,86 @@ export default function MainPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: KARTU DETAIL RIWAYAT ANTRIAN */}
+      {selectedRiwayatItem && (
+        <div className="custom-overlay" onClick={e => e.target === e.currentTarget && setSelectedRiwayatItem(null)} style={{ zIndex: 10001 }}>
+          <div className="custom-modal" style={{ maxWidth: '500px' }}>
+            <div className="custom-modal-header" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#fff7ed', color: '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 900 }}>
+                  <i className="fas fa-ticket-alt"></i>
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>Kartu Detail Antrian</h4>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Nomor Tiket: <strong style={{ color: '#f97316' }}>{selectedRiwayatItem.nomor_antrian}</strong></span>
+                </div>
+              </div>
+              <button className="custom-modal-close" onClick={() => setSelectedRiwayatItem(null)}><i className="fas fa-times"></i></button>
+            </div>
+            <div className="custom-modal-body" style={{ padding: '20px 24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, background: '#f8fafc', padding: '12px 16px', borderRadius: 12 }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Status Pelayanan</span>
+                {(() => {
+                  const s = STATUS_MAP[selectedRiwayatItem.status] || STATUS_MAP.menunggu;
+                  return (
+                    <span style={{ background: s.bg, color: s.color, padding: '6px 14px', borderRadius: 50, fontSize: '0.85rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <i className={`fas ${s.icon}`}></i> {s.label}
+                    </span>
+                  );
+                })()}
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Layanan & Pengerjaan</span>
+                  <strong style={{ color: '#0f172a', fontSize: '1rem', display: 'block' }}>{selectedRiwayatItem.nama_layanan}</strong>
+                  <div style={{ fontSize: '0.8rem', color: '#ea580c', fontWeight: 700, marginTop: 4, background: '#fff7ed', padding: '6px 12px', borderRadius: 8, display: 'inline-block', border: '1px solid #ffedd5' }}>
+                    <i className="fas fa-receipt" style={{ marginRight: 4 }}></i> {selectedRiwayatItem.rincian_harga ? selectedRiwayatItem.rincian_harga.replace(/,/g, ' +') : '-'}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, borderTop: '1px dashed #e2e8f0', borderBottom: '1px dashed #e2e8f0', padding: '16px 0' }}>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Tanggal Antrian</span>
+                    <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{formatTanggalIndo(selectedRiwayatItem.tanggal)}</strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Total Biaya</span>
+                    <strong style={{ color: '#16a34a', fontSize: '1.1rem', fontWeight: 900 }}>Rp {selectedRiwayatItem.total_harga ? selectedRiwayatItem.total_harga.toLocaleString('id-ID') : '0'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Estimasi Waktu</span>
+                    <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedRiwayatItem.estimasi_menit || 30} Menit</strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Slot Waktu Mulai</span>
+                    <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedRiwayatItem.slot_waktu ? selectedRiwayatItem.slot_waktu.substring(0,5) + ' WIB' : '-'}</strong>
+                  </div>
+                </div>
+
+                {selectedRiwayatItem.kendaraan && (
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Kendaraan</span>
+                    <div style={{ color: '#334155', fontSize: '0.9rem', background: '#f1f5f9', padding: '8px 12px', borderRadius: 8, fontWeight: 600 }}>{selectedRiwayatItem.kendaraan}</div>
+                  </div>
+                )}
+
+                {selectedRiwayatItem.catatan && (
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Catatan Keluhan</span>
+                    <p style={{ margin: 0, color: '#475569', fontSize: '0.88rem', lineHeight: 1.5, background: '#f8fafc', padding: '10px 14px', borderRadius: 8, fontStyle: 'italic' }}>"{selectedRiwayatItem.catatan}"</p>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: 24, textAlign: 'center' }}>
+                <button onClick={() => setSelectedRiwayatItem(null)} style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: 12, fontFamily: 'inherit', fontWeight: 800, cursor: 'pointer', fontSize: '0.95rem' }}>Tutup Kartu</button>
+              </div>
             </div>
           </div>
         </div>
