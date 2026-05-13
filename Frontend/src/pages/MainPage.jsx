@@ -682,13 +682,13 @@ export default function MainPage() {
         <div className="custom-overlay" onClick={e => e.target === e.currentTarget && setSelectedRiwayatItem(null)} style={{ zIndex: 10001 }}>
           <div className="custom-modal" style={{ maxWidth: '500px' }}>
             <div className="custom-modal-header" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#fff7ed', color: '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 900 }}>
-                  <i className="fas fa-ticket-alt"></i>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ padding: '8px 16px', borderRadius: 14, background: '#f97316', color: '#fff', display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.25rem', fontWeight: 900, boxShadow: '0 4px 12px rgba(249,115,22,0.3)' }}>
+                  <i className="fas fa-ticket-alt"></i> <span>{selectedRiwayatItem.nomor_antrian}</span>
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>Kartu Detail Antrian</h4>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Nomor Tiket: <strong style={{ color: '#f97316' }}>{selectedRiwayatItem.nomor_antrian}</strong></span>
+                  <h4 style={{ margin: 0, fontSize: '1.15rem', color: '#0f172a', fontWeight: 800 }}>Kartu Detail Antrian</h4>
+                  <span style={{ fontSize: '0.82rem', color: '#64748b' }}>Riwayat Pendaftaran Bengkel</span>
                 </div>
               </div>
               <button className="custom-modal-close" onClick={() => setSelectedRiwayatItem(null)}><i className="fas fa-times"></i></button>
