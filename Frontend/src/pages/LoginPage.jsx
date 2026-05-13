@@ -78,6 +78,7 @@ export default function LoginPage() {
         localStorage.setItem('antrian_token', data.token);
         localStorage.setItem('antrian_role', data.user.role);
         localStorage.setItem('antrian_user', JSON.stringify(data.user));
+        sessionStorage.setItem('show_welcome_toast', 'true');
 
         if (data.user.role === 'admin') navigate('/admin');
         else if (data.user.role === 'montir') navigate('/montir');

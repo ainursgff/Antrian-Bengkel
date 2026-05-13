@@ -20,6 +20,7 @@ export default function MontirPage() {
   const [filter, setFilter] = useState('semua'); // 'semua', 'dipanggil', 'sedang_dilayani', 'selesai'
   const [waktu, setWaktu] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     if (!token || localStorage.getItem('antrian_role') !== 'montir') {
@@ -32,6 +33,13 @@ export default function MontirPage() {
     document.head.appendChild(link);
 
     fetchAll();
+
+    if (sessionStorage.getItem('show_welcome_toast') === 'true') {
+      setShowWelcome(true);
+      sessionStorage.removeItem('show_welcome_toast');
+      setTimeout(() => setShowWelcome(false), 4500);
+    }
+
     const interval = setInterval(fetchAntrian, 10000);
     const clockIv = setInterval(() => setWaktu(new Date()), 1000);
 
@@ -130,6 +138,44 @@ export default function MontirPage() {
 
   return (
     <div className="panel-layout">
+      <style>{`
+        @keyframes slideDownFade {
+          0% { transform: translate(-50%, -20px); opacity: 0; }
+          100% { transform: translate(-50%, 0); opacity: 1; }
+        }
+      `}</style>
+
+      {showWelcome && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999,
+          background: 'rgba(22, 163, 74, 0.95)',
+          backdropFilter: 'blur(10px)',
+          color: '#fff',
+          padding: '16px 28px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontWeight: '700',
+          fontSize: '1rem',
+          animation: 'slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          fontFamily: "'Plus Jakarta Sans', sans-serif"
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.2)', width: '32px', height: '32px', borderRadius: '50%' }}>
+            <i className="fas fa-check" style={{ fontSize: '1rem' }}></i>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.9, fontWeight: 500 }}>Login Berhasil</div>
+            <div>Selamat Datang, {user.nama || 'Mekanik'}! 👋</div>
+          </div>
+        </div>
+      )}
+
       {/* SIDEBAR COHESIVE TO ADMIN */}
       <nav className="sidebar">
         <div className="sidebar-logo">
