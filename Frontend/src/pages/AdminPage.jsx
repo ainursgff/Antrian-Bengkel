@@ -255,9 +255,11 @@ export default function AdminPage() {
   return (
     <div className="panel-layout">
       <style>{`
-        @keyframes slideDownFade {
+        @keyframes slideDownFadeInOut {
           0% { transform: translate(-50%, -20px); opacity: 0; }
-          100% { transform: translate(-50%, 0); opacity: 1; }
+          12% { transform: translate(-50%, 0); opacity: 1; }
+          88% { transform: translate(-50%, 0); opacity: 1; }
+          100% { transform: translate(-50%, -20px); opacity: 0; }
         }
       `}</style>
 
@@ -279,7 +281,7 @@ export default function AdminPage() {
           gap: '12px',
           fontWeight: '700',
           fontSize: '1rem',
-          animation: 'slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          animation: 'slideDownFadeInOut 3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
           fontFamily: "'Plus Jakarta Sans', sans-serif"
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.2)', width: '32px', height: '32px', borderRadius: '50%' }}>
