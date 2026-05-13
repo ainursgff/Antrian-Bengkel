@@ -249,7 +249,7 @@ router.post('/', authMiddleware, async (req, res) => {
         id: result.insertId,
         nomor_antrian,
         layanan: layananRows[0].nama_layanan,
-        tanggal,
+        tanggal: targetTanggal,
         slot_waktu,
         status: 'menunggu'
       }
