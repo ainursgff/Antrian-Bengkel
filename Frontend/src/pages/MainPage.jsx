@@ -62,7 +62,7 @@ export default function MainPage() {
     if (isLoggedIn && sessionStorage.getItem('show_welcome_toast') === 'true') {
       setShowWelcome(true);
       sessionStorage.removeItem('show_welcome_toast');
-      const timer = setTimeout(() => setShowWelcome(false), 4500);
+      const timer = setTimeout(() => setShowWelcome(false), 3000);
       return () => clearTimeout(timer);
     }
   }, [isLoggedIn]);

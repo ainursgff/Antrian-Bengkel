@@ -37,7 +37,7 @@ export default function MontirPage() {
     if (sessionStorage.getItem('show_welcome_toast') === 'true') {
       setShowWelcome(true);
       sessionStorage.removeItem('show_welcome_toast');
-      setTimeout(() => setShowWelcome(false), 4500);
+      setTimeout(() => setShowWelcome(false), 3000);
     }
 
     const interval = setInterval(fetchAntrian, 10000);
