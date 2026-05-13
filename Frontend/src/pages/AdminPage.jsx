@@ -282,7 +282,8 @@ export default function AdminPage() {
           fontWeight: '700',
           fontSize: '1rem',
           animation: 'slideDownFadeInOut 3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-          fontFamily: "'Plus Jakarta Sans', sans-serif"
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          pointerEvents: 'none'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.2)', width: '32px', height: '32px', borderRadius: '50%' }}>
             <i className="fas fa-check" style={{ fontSize: '1rem' }}></i>
