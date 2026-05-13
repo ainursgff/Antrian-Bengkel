@@ -1,8 +1,7 @@
 const express = require('express');
-const crypto = require('crypto');
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
-const { addToken, removeToken, adminMiddleware } = require('../middleware/auth');
+const { addToken, removeToken, adminMiddleware, generateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -64,8 +63,7 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Email atau password salah' });
     }
-    const token = crypto.randomBytes(32).toString('hex');
-    addToken(token, {
+    const token = generateToken({
       userId: user.id,
       role: user.role,
       nama: user.nama,

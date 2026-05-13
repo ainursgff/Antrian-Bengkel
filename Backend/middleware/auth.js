@@ -1,48 +1,46 @@
-const fs = require('fs');
-const path = require('path');
+const jwt = require('jsonwebtoken');
 
-const TOKENS_FILE = path.join(__dirname, '../active_tokens.json');
+// Secret key untuk JWT — gunakan environment variable di production
+const JWT_SECRET = process.env.JWT_SECRET || 'antrian-bengkel-secret-key-2024';
+const JWT_EXPIRES_IN = '24h'; // Token berlaku 24 jam
 
-// In-memory token store: token -> { userId, role, nama, email, noHp }
-let activeTokens = new Map();
-
-// Muat data token dari file saat startup backend
-try {
-  if (fs.existsSync(TOKENS_FILE)) {
-    const raw = fs.readFileSync(TOKENS_FILE, 'utf8');
-    if (raw.trim()) {
-      const obj = JSON.parse(raw);
-      activeTokens = new Map(Object.entries(obj));
-    }
-  }
-} catch (e) {
-  console.error("Database startup check error (active_tokens.json):", e);
+/**
+ * Membuat JWT token dari data user
+ * @param {Object} userData - { userId, role, nama, email, noHp }
+ * @returns {string} JWT token
+ */
+function generateToken(userData) {
+  return jwt.sign(userData, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
-function saveTokens() {
+/**
+ * Memverifikasi dan mendecode JWT token
+ * @param {string} token
+ * @returns {Object|null} decoded payload atau null jika tidak valid
+ */
+function verifyToken(token) {
   try {
-    const obj = Object.fromEntries(activeTokens.entries());
-    fs.writeFileSync(TOKENS_FILE, JSON.stringify(obj, null, 2), 'utf8');
-  } catch (e) {
-    console.error("Gagal menyimpan active_tokens.json:", e);
+    return jwt.verify(token, JWT_SECRET);
+  } catch {
+    return null;
   }
 }
 
+// Backward compatibility — fungsi lama yang masih dipanggil di routes/auth.js
 function addToken(token, userData) {
-  activeTokens.set(token, userData);
-  saveTokens();
+  // Tidak perlu menyimpan lagi karena JWT bersifat stateless
+  // Fungsi ini tetap ada agar tidak error saat dipanggil
 }
 
 function removeToken(token) {
-  activeTokens.delete(token);
-  saveTokens();
+  // JWT stateless — logout ditangani di sisi frontend (hapus dari localStorage)
 }
 
-function getUser(token) {
-  return activeTokens.get(token);
-}
-
-// Middleware: cek token valid
+/**
+ * Middleware: Verifikasi JWT token pada setiap request terproteksi
+ * - Mengambil token dari header: Authorization: Bearer <token>
+ * - Mendecode payload JWT dan menempelkannya ke req.user
+ */
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -50,18 +48,22 @@ function authMiddleware(req, res, next) {
   }
 
   const token = authHeader.split(' ')[1];
-  const user = activeTokens.get(token);
+  const decoded = verifyToken(token);
 
-  if (!user) {
+  if (!decoded) {
     return res.status(401).json({ error: 'Unauthorized: Token tidak valid atau sudah kadaluarsa' });
   }
 
-  req.user = user;
+  req.user = decoded;
   req.token = token;
   next();
 }
 
-// Middleware: cek harus admin
+/**
+ * Middleware: Verifikasi harus role admin
+ * - Memanggil authMiddleware terlebih dahulu
+ * - Lalu mengecek req.user.role === 'admin'
+ */
 function adminMiddleware(req, res, next) {
   authMiddleware(req, res, () => {
     if (req.user.role !== 'admin') {
@@ -71,4 +73,4 @@ function adminMiddleware(req, res, next) {
   });
 }
 
-module.exports = { authMiddleware, adminMiddleware, addToken, removeToken, getUser };
+module.exports = { authMiddleware, adminMiddleware, addToken, removeToken, generateToken, verifyToken };

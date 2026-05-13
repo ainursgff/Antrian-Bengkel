@@ -19,5 +19,26 @@
     "nama": "Assegaf",
     "email": "Asg@gmail.com",
     "noHp": "08764746743"
+  },
+  "561e19db296eed6eed19b4385e8e8be8b1682e86a4dd39a4015e08250e17a3a7": {
+    "userId": 2,
+    "role": "pelanggan",
+    "nama": "Ai",
+    "email": "Ai@gmail.com",
+    "noHp": "08336350211"
+  },
+  "96347c3d37c666942d47ae03cd67f9b3b8ef6a2c83afd4fe91b34f7e10e6349c": {
+    "userId": 12,
+    "role": "montir",
+    "nama": "Fash",
+    "email": "Fash@gmail.com",
+    "noHp": "0856453554"
+  },
+  "98bd236f56dc3e54d702e4d7394b9efb2961d17b2fa9647c718ca5fc2ad31995": {
+    "userId": 12,
+    "role": "montir",
+    "nama": "Fash",
+    "email": "Fash@gmail.com",
+    "noHp": "0856453554"
   }
 }
