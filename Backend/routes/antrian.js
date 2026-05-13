@@ -118,39 +118,66 @@ router.post('/', authMiddleware, async (req, res) => {
   const layananIdsStr = Array.isArray(layanan_id) ? layanan_id.join(',') : layanan_id;
 
   try {
-    const tanggal = getTodayLocal();
+    let targetTanggal = getTodayLocal();
     const now = new Date();
     const dayOfWeek = now.getDay(); 
+    let isBookingBesok = false;
 
     // Cek jadwal operasional hari ini
     const [jadwalRows] = await pool.query(
       'SELECT * FROM jadwal_operasional WHERE hari = ? AND is_libur = 0 LIMIT 1',
       [dayOfWeek]
     );
+
     if (jadwalRows.length === 0) {
-      return res.status(400).json({ error: 'Maaf, bengkel sedang libur hari ini.' });
+      // Jika hari ini libur, maka booking dialihkan ke besok
+      isBookingBesok = true;
+    } else {
+      const jadwal = jadwalRows[0];
+      const jamTutupParts = jadwal.jam_tutup.split(':').map(Number);
+      const jamTutupMinutes = jamTutupParts[0] * 60 + jamTutupParts[1];
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      if (currentMinutes >= (jamTutupMinutes - 30)) {
+        // Jika sudah melewati batas tutup hari ini, booking dialihkan ke besok
+        isBookingBesok = true;
+      }
     }
 
-    const jadwal = jadwalRows[0];
+    let targetDayOfWeek = dayOfWeek;
+    if (isBookingBesok) {
+      const besok = new Date();
+      besok.setDate(besok.getDate() + 1);
+      const y = besok.getFullYear();
+      const m = String(besok.getMonth() + 1).padStart(2, '0');
+      const d = String(besok.getDate()).padStart(2, '0');
+      targetTanggal = `${y}-${m}-${d}`;
+      targetDayOfWeek = besok.getDay();
+    }
 
-    // Validasi Jam Operasional & Aturan 30 Menit
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    // Ambil jadwal operasional untuk target hari (hari ini atau besok)
+    const [targetJadwalRows] = await pool.query(
+      'SELECT * FROM jadwal_operasional WHERE hari = ? AND is_libur = 0 LIMIT 1',
+      [targetDayOfWeek]
+    );
+
+    if (targetJadwalRows.length === 0) {
+      return res.status(400).json({ error: 'Maaf, bengkel sedang libur dan jadwal operasional besok juga libur.' });
+    }
+
+    const jadwal = targetJadwalRows[0];
     const jamBukaParts = jadwal.jam_buka.split(':').map(Number);
     const jamBukaMinutes = jamBukaParts[0] * 60 + jamBukaParts[1];
     const jamTutupParts = jadwal.jam_tutup.split(':').map(Number);
     const jamTutupMinutes = jamTutupParts[0] * 60 + jamTutupParts[1];
 
-    if (currentMinutes >= (jamTutupMinutes - 30)) {
-      return res.status(400).json({ error: `Pendaftaran ditutup! Pendaftaran dihentikan 30 menit sebelum jam tutup (${jadwal.jam_tutup.substring(0,5)} WIB).` });
-    }
-
-    // Cek apakah user sudah punya antrian aktif hari ini
+    // Cek apakah user sudah punya antrian aktif di target tanggal
     const [existingAntrian] = await pool.query(
       `SELECT id FROM antrian WHERE user_id = ? AND tanggal = ? AND status IN ('menunggu','dipanggil','sedang_dilayani')`,
-      [req.user.userId, tanggal]
+      [req.user.userId, targetTanggal]
     );
     if (existingAntrian.length > 0) {
-      return res.status(409).json({ error: 'Anda masih memiliki antrian aktif hari ini.' });
+      return res.status(409).json({ error: isBookingBesok ? 'Anda sudah memiliki antrian aktif untuk jadwal besok.' : 'Anda masih memiliki antrian aktif hari ini.' });
     }
 
     // Cek layanan aktif dan hitung total waktu
@@ -167,26 +194,26 @@ router.post('/', authMiddleware, async (req, res) => {
     const estimasiMenit = Number(layananRows[0].estimasi_menit) || 30;
 
     // Generate nomor antrian
-    const nomor_antrian = await generateNomorAntrian(layananIdsStr, tanggal);
+    const nomor_antrian = await generateNomorAntrian(layananIdsStr, targetTanggal);
 
-    // Hitung total beban waktu seluruh bengkel hari ini (Multi-Channel Algorithm)
+    // Hitung total beban waktu seluruh bengkel di target tanggal (Multi-Channel Algorithm)
     const [totalWaktuRows] = await pool.query(
       `SELECT SUM(l.estimasi_menit) as total_menit FROM antrian a JOIN layanan l ON FIND_IN_SET(l.id, a.layanan_id) WHERE a.tanggal = ? AND a.status != 'dibatalkan'`,
-      [tanggal]
+      [targetTanggal]
     );
-    const totalMenitHariIni = Number(totalWaktuRows[0].total_menit) || 0;
+    const totalMenitTarget = Number(totalWaktuRows[0].total_menit) || 0;
     const kuotaMontir = jadwal.kuota_per_slot || 1;
     
     // Rata-rata beban per montir
-    let baseMinutes = jamBukaMinutes + Math.floor(totalMenitHariIni / kuotaMontir);
+    let baseMinutes = jamBukaMinutes + Math.floor(totalMenitTarget / kuotaMontir);
 
-    // Jika antrian sedang sepi (waktu giliran sudah lewat dari waktu saat ini), 
-    // maka langsung dilayani dari waktu saat ini.
-    const slotMinutes = Math.max(baseMinutes, currentMinutes);
+    // Jika booking untuk besok, slot langsung dihitung dari jam buka! Jika hari ini, diambil dari waktu saat ini atau baseMinutes.
+    const currentMinutesNow = now.getHours() * 60 + now.getMinutes();
+    const slotMinutes = isBookingBesok ? baseMinutes : Math.max(baseMinutes, currentMinutesNow);
 
     // Tolak jika estimasi layanan selesai melewati jam tutup bengkel
     if ((slotMinutes + estimasiMenit) > jamTutupMinutes) {
-      return res.status(400).json({ error: 'Maaf, kuota antrian hari ini sudah penuh (melewati jam tutup).' });
+      return res.status(400).json({ error: 'Maaf, kuota antrian sudah penuh (melewati jam tutup).' });
     }
 
     const slotH = Math.floor(slotMinutes / 60);
@@ -197,7 +224,7 @@ router.post('/', authMiddleware, async (req, res) => {
     const [result] = await pool.query(
       `INSERT INTO antrian (user_id, layanan_id, kendaraan, jadwal_id, nomor_antrian, tanggal, slot_waktu, status, catatan)
        VALUES (?, ?, ?, ?, ?, ?, ?, 'menunggu', ?)`,
-      [req.user.userId, layananIdsStr, kendaraan || null, jadwal.id, nomor_antrian, tanggal, slot_waktu, catatan || null]
+      [req.user.userId, layananIdsStr, kendaraan || null, jadwal.id, nomor_antrian, targetTanggal, slot_waktu, catatan || null]
     );
 
     // Simpan relasi fisik ke tabel pivot antrian_layanan untuk memunculkan garis relasi di ERD
