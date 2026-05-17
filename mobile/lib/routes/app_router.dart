@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
-
 import '../features/auth/screens/login_screen.dart';
-import '../features/antrian/screens/customer_dashboard_screen.dart';
-
-// Dummy screens for now
-class AdminDashboardScreen extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Admin Dashboard'))); }
-class MontirDashboardScreen extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Montir Dashboard'))); }
+import '../features/home/screens/main_navigation_screen.dart';
+import '../features/antrian/screens/ambil_antrian_screen.dart';
+import '../features/admin/screens/admin_dashboard.dart';
+import '../features/montir/screens/montir_dashboard.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
@@ -23,7 +21,11 @@ class AppRouter {
       ),
       GoRoute(
         path: '/customer',
-        builder: (context, state) => CustomerDashboardScreen(),
+        builder: (context, state) => MainNavigationScreen(),
+      ),
+      GoRoute(
+        path: '/ambil-antrian',
+        builder: (context, state) => AmbilAntrianScreen(),
       ),
       GoRoute(
         path: '/admin',
