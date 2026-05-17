@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../core/constants/app_constants.dart';
@@ -10,6 +9,7 @@ import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/home/screens/customer_shell.dart';
 import '../features/antrian/screens/ambil_antrian_screen.dart';
 import '../features/admin/screens/admin_shell.dart';
+import '../features/montir/screens/montir_shell.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
@@ -57,10 +57,10 @@ class AppRouter {
         path: '/admin',
         builder: (context, state) => const AdminShell(),
       ),
-      // Montir — Phase 3
+      // Montir — with bottom nav
       GoRoute(
         path: '/montir',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Dashboard Petugas'),
+        builder: (context, state) => const MontirShell(),
       ),
     ],
     redirect: (context, state) {
@@ -84,23 +84,4 @@ class AppRouter {
       return null;
     },
   );
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          '$title\n(Segera Hadir)',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-      ),
-    );
-  }
 }

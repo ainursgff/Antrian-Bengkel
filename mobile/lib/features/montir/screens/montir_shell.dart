@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../providers/notifikasi_provider.dart';
-import '../../antrian/screens/dashboard_screen.dart';
-import '../../antrian/screens/riwayat_screen.dart';
+import 'montir_dashboard_screen.dart';
+import 'montir_riwayat_screen.dart';
 import '../../notifikasi/screens/notifikasi_screen.dart';
-import '../../profil/screens/profil_screen.dart';
+import 'montir_profil_screen.dart';
 
-class CustomerShell extends StatefulWidget {
-  const CustomerShell({super.key});
+class MontirShell extends StatefulWidget {
+  const MontirShell({super.key});
 
   @override
-  State<CustomerShell> createState() => _CustomerShellState();
+  State<MontirShell> createState() => _MontirShellState();
 }
 
-class _CustomerShellState extends State<CustomerShell> {
+class _MontirShellState extends State<MontirShell> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
-    DashboardScreen(),
-    RiwayatScreen(),
+    MontirDashboardScreen(),
+    MontirRiwayatScreen(),
     NotifikasiScreen(),
-    ProfilScreen(),
+    MontirProfilScreen(),
   ];
 
   @override
@@ -44,14 +42,12 @@ class _CustomerShellState extends State<CustomerShell> {
         builder: (context, notifProv, _) {
           return NavigationBar(
             selectedIndex: _currentIndex,
-            onDestinationSelected: (index) {
-              setState(() => _currentIndex = index);
-            },
+            onDestinationSelected: (i) => setState(() => _currentIndex = i),
             destinations: [
               const NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
+                icon: Icon(Icons.engineering_outlined),
+                selectedIcon: Icon(Icons.engineering),
+                label: 'Tugas',
               ),
               const NavigationDestination(
                 icon: Icon(Icons.history_outlined),
@@ -80,15 +76,6 @@ class _CustomerShellState extends State<CustomerShell> {
           );
         },
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () => context.push('/ambil-antrian'),
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Ambil Antrian', style: TextStyle(fontWeight: FontWeight.w700)),
-            )
-          : null,
     );
   }
 }
