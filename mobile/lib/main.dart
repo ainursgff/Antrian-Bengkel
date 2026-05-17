@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 import 'providers/auth_provider.dart';
 import 'providers/antrian_provider.dart';
+import 'providers/admin_provider.dart';
 import 'routes/app_router.dart';
 
 void main() async {
@@ -32,6 +33,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => AntrianProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: const AntrianBengkelApp(),
     ),

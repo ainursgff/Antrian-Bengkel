@@ -9,6 +9,7 @@ import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/home/screens/customer_shell.dart';
 import '../features/antrian/screens/ambil_antrian_screen.dart';
+import '../features/admin/screens/admin_shell.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
@@ -51,10 +52,10 @@ class AppRouter {
         path: '/ambil-antrian',
         builder: (context, state) => const AmbilAntrianScreen(),
       ),
-      // Admin — Phase 3
+      // Admin — with bottom nav
       GoRoute(
         path: '/admin',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Dashboard Admin'),
+        builder: (context, state) => const AdminShell(),
       ),
       // Montir — Phase 3
       GoRoute(
