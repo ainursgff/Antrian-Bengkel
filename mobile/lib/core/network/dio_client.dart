@@ -1,34 +1,72 @@
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
+import '../constants/app_constants.dart';
+import '../../services/auth_storage.dart';
 
 class DioClient {
-  static const String baseUrl = 'http://10.0.2.2:5001/api'; // 10.0.2.2 for Android Emulator, localhost for iOS Simulator
+  static DioClient? _instance;
+  late final Dio dio;
 
-  final Dio _dio;
+  DioClient._internal() {
+    dio = Dio(
+      BaseOptions(
+        baseUrl: AppConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 15),
+        responseType: ResponseType.json,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
 
-  DioClient() : _dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-    responseType: ResponseType.json,
-  )) {
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('antrian_token');
-        
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        
-        return handler.next(options);
-      },
-      onError: (DioException e, handler) {
-        // Handle global errors here like 401 Unauthorized
-        return handler.next(e);
-      }
-    ));
+    // Auth Interceptor — injects Bearer token on every request
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await AuthStorage.getToken();
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          return handler.next(response);
+        },
+        onError: (DioException error, handler) async {
+          if (error.response?.statusCode == 401) {
+            // Token expired or invalid — clear local storage
+            await AuthStorage.clearAll();
+          }
+          return handler.next(error);
+        },
+      ),
+    );
+
+    // Logging interceptor (debug only)
+    if (kDebugMode) {
+      dio.interceptors.add(
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          error: true,
+          requestHeader: false,
+          responseHeader: false,
+          logPrint: (object) => debugPrint(object.toString()),
+        ),
+      );
+    }
   }
 
-  Dio get dio => _dio;
+  factory DioClient() {
+    _instance ??= DioClient._internal();
+    return _instance!;
+  }
+
+  // Reset instance (useful after logout to clear state)
+  static void reset() {
+    _instance = null;
+  }
 }

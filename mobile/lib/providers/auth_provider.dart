@@ -1,74 +1,121 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../core/network/dio_client.dart';
+import '../services/auth_service.dart';
+import '../services/auth_storage.dart';
 
 class AuthProvider with ChangeNotifier {
-  final DioClient _dioClient = DioClient();
-  
+  final AuthService _authService = AuthService();
+
   bool _isAuthenticated = false;
-  String? _token;
+  bool _isLoading = false;
   String? _role;
   Map<String, dynamic>? _user;
-  
+  String? _errorMessage;
+
   bool get isAuthenticated => _isAuthenticated;
+  bool get isLoading => _isLoading;
   String? get role => _role;
   Map<String, dynamic>? get user => _user;
-  
+  String? get errorMessage => _errorMessage;
+
+  // Check stored auth state on app start
   Future<void> checkAuthStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('antrian_token');
-    _role = prefs.getString('antrian_role');
-    final userStr = prefs.getString('antrian_user');
-    
-    if (_token != null && userStr != null) {
+    final loggedIn = await AuthStorage.isLoggedIn();
+    if (loggedIn) {
       _isAuthenticated = true;
-      _user = jsonDecode(userStr);
+      _role = await AuthStorage.getRole();
+      _user = await AuthStorage.getUser();
     } else {
       _isAuthenticated = false;
+      _role = null;
+      _user = null;
     }
     notifyListeners();
   }
 
   Future<bool> login(String email, String password) async {
-    try {
-      final response = await _dioClient.dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('antrian_token', response.data['token']);
-        await prefs.setString('antrian_role', response.data['user']['role']);
-        await prefs.setString('antrian_user', jsonEncode(response.data['user']));
-        
-        await checkAuthStatus();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
+    final result = await _authService.login(email, password);
+
+    if (result['success'] == true) {
+      await AuthStorage.saveToken(result['token']);
+      await AuthStorage.saveRole(result['user']['role']);
+      await AuthStorage.saveUser(result['user']);
+
+      _isAuthenticated = true;
+      _role = result['user']['role'];
+      _user = result['user'];
+      _errorMessage = null;
+    } else {
+      _errorMessage = result['message'] ?? 'Login gagal';
     }
+
+    _isLoading = false;
+    notifyListeners();
+    return result['success'] == true;
+  }
+
+  Future<Map<String, dynamic>> register(String nama, String email, String password, String noHp) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await _authService.register(nama, email, password, noHp);
+
+    if (result['success'] != true) {
+      _errorMessage = result['message'] ?? 'Registrasi gagal';
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return result;
+  }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await _authService.forgotPassword(email);
+
+    _isLoading = false;
+    notifyListeners();
+    return result;
+  }
+
+  Future<Map<String, dynamic>> resetPassword(String email, String newPassword) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await _authService.resetPassword(email, newPassword);
+
+    _isLoading = false;
+    notifyListeners();
+    return result;
   }
 
   Future<void> logout() async {
-    try {
-      await _dioClient.dio.post('/auth/logout');
-    } catch (e) {
-      // Ignore network error on logout
-    } finally {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('antrian_token');
-      await prefs.remove('antrian_role');
-      await prefs.remove('antrian_user');
-      
-      _isAuthenticated = false;
-      _token = null;
-      _role = null;
-      _user = null;
-      
-      notifyListeners();
-    }
+    _isLoading = true;
+    notifyListeners();
+
+    await _authService.logout();
+    await AuthStorage.clearAll();
+    DioClient.reset();
+
+    _isAuthenticated = false;
+    _role = null;
+    _user = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
   }
 }

@@ -1,49 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'core/theme/app_theme.dart';
+import 'core/constants/app_constants.dart';
 import 'providers/auth_provider.dart';
-import 'providers/data_provider.dart';
 import 'routes/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Lock orientation to portrait
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // Status bar style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
+
   final authProvider = AuthProvider();
-  await authProvider.checkAuthStatus(); // Initialize auth state before running app
+  await authProvider.checkAuthStatus();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
-        ChangeNotifierProvider(create: (_) => DataProvider()),
       ],
-      child: const MyApp(),
+      child: const AntrianBengkelApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class AntrianBengkelApp extends StatelessWidget {
+  const AntrianBengkelApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final appRouter = AppRouter(authProvider).router;
+    final appRouter = AppRouter(authProvider);
 
     return MaterialApp.router(
-      title: 'Antrian Bengkel',
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: const Color(0xFFF97316),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFF97316),
-          primary: const Color(0xFFF97316),
-          secondary: const Color(0xFF1E293B),
-        ),
-        fontFamily: 'Plus Jakarta Sans', // Make sure to add this font in pubspec.yaml later
-        useMaterial3: true,
-      ),
-      routerConfig: appRouter,
+      theme: AppTheme.lightTheme,
+      routerConfig: appRouter.router,
     );
   }
 }
