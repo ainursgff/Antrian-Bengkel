@@ -40,8 +40,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
+const loginLimiter = require('../middleware/loginLimiter');
+
 // POST /api/auth/login — UC2: Login pelanggan | UC6: Login admin
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {

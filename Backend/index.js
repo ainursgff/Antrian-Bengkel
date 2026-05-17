@@ -9,6 +9,10 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
+// Global Rate Limiting
+const globalLimiter = require('./middleware/rateLimiter');
+app.use(globalLimiter);
+
 // Routes
 const authRouter = require('./routes/auth');
 const antrianRouter = require('./routes/antrian');
