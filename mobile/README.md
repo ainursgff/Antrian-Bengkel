@@ -1,87 +1,124 @@
-# Antrian Bengkel — Mobile App (Flutter)
+# 🔧 Antrian Bengkel — Mobile App
 
-Aplikasi mobile resmi untuk sistem **Antrian Bengkel UMKM**, dibangun menggunakan arsitektur modern **Flutter** yang bertindak sebagai antarmuka (client-side) dari **Express.js API Backend** yang sudah ada.
+Sistem antrian digital premium untuk UMKM bengkel.
 
-Aplikasi ini tidak memiliki database lokal yang independen; semua data operasional, validasi penting, dan *business logic* sepenuhnya tersinkronisasi dan dikendalikan oleh backend `Node.js + MySQL`.
+## 📱 Tech Stack
 
----
+- **Framework**: Flutter (latest stable)
+- **State Management**: Provider
+- **HTTP Client**: Dio + Auto Retry
+- **Routing**: GoRouter
+- **Design**: Material 3 (Light + Dark Mode)
+- **Backend**: Express.js + MySQL (existing)
 
-## 🏗 Arsitektur & Teknologi
+## 🚀 Setup Development
 
-Sistem aplikasi mengikuti prinsip **Clean Architecture** ringan dan terstruktur agar *scalable* serta mudah di-*maintain*.
-
-*   **SDK & Bahasa**: Flutter (Versi Stabil Terbaru) & Dart
-*   **Networking**: `Dio` (HTTP Client) dengan *Token Auth Interceptors*
-*   **State Management**: `Provider` (Untuk Auth State Global & Lifecycle)
-*   **Routing & Navigasi**: `Go Router` dengan *Role-Based Access Control* (Pelanggan, Montir, Admin)
-*   **Local Storage**: `SharedPreferences` (Untuk *persistence* token sesi agar fitur Auto-Login berjalan lancar)
-*   **Theming**: Custom Material 3 Theming yang seragam dengan *UI Desktop/Web* (Premium Automotive Style: Oranye + Hitam).
-
-### 📂 Struktur Direktori
-
-```text
-mobile/
-├── lib/
-│ ├── core/              # Komponen utama yang dipakai berulang di seluruh aplikasi
-│ │ ├── constants/       # Konstanta string, warna, dan assets path
-│ │ ├── network/         # Konfigurasi Dio Client & API Interceptors
-│ │ ├── theme/           # Konfigurasi Custom Tema & Typography (Google Fonts)
-│ │ ├── utils/           # Helper functions (Date formatter, Currency format, dsb)
-│ │ └── widgets/         # Reusable UI widgets (Custom Buttons, Inputs, Cards)
-│ │
-│ ├── features/          # Modul fitur mandiri (Screen UI & Logic spesifik fitur)
-│ │ ├── auth/            # Halaman Login, Register, Forgot Password
-│ │ ├── antrian/         # Halaman Ambil Antrian & Kartu Detail Antrian
-│ │ ├── layanan/         # List & Detail Layanan Servis
-│ │ ├── admin/           # Dashboard & Panel Khusus Admin
-│ │ └── montir/          # Papan Kerja Montir & Update Progress Servis
-│ │
-│ ├── models/            # Struktur Data JSON Serialization (Dart Objects)
-│ ├── providers/         # Global state controllers (seperti AuthProvider)
-│ ├── routes/            # Konfigurasi GoRouter & proteksi navigasi berdasarkan Role
-│ ├── services/          # Endpoint wrapper spesifik per modul (API Repository)
-│ └── main.dart          # Entry point inisialisasi aplikasi
-```
-
----
-
-## 🚀 Panduan Menjalankan Proyek (Setup & Build)
-
-### 1. Menghubungkan Emulator ke Localhost Express.js
-Secara *default*, *backend* Anda berjalan di **`http://localhost:5001`**. 
-Namun, Android Emulator **TIDAK BISA** mengakses `localhost` langsung karena itu merujuk ke sistem internal emulator tersebut.
-
-*   Untuk **Android Emulator**, ganti `localhost` menjadi IP khusus: **`http://10.0.2.2:5001`**
-*   Buka file `lib/core/network/dio_client.dart` dan pastikan konfigurasi `baseUrl` sudah benar:
-    ```dart
-    static const String baseUrl = 'http://10.0.2.2:5001/api'; 
-    ```
-*(Jika Anda menggunakan Real Device, sambungkan HP dan Laptop ke jaringan WiFi yang sama, lalu gunakan IP IPv4 Laptop Anda, contoh: `http://192.168.1.5:5001/api`).*
-
-### 2. Mengunduh Dependensi
-Jalankan perintah ini di dalam folder `/mobile`:
 ```bash
+# 1. Install dependencies
 flutter pub get
+
+# 2. Run on Chrome (development)
+flutter run -d chrome
+
+# 3. Run on Android device
+flutter run -d <device_id>
+
+# 4. Check connected devices
+flutter devices
 ```
 
-### 3. Menjalankan Aplikasi
-Pilih emulator yang tersedia atau *device* yang terkoneksi, lalu jalankan:
+## 🔧 Environment Configuration
+
+Edit `lib/core/config/env_config.dart`:
+
+| Environment | Base URL |
+|-------------|----------|
+| Dev (Web) | `http://localhost:5001/api` |
+| Dev (Android) | `http://10.0.2.2:5001/api` |
+| Staging | `http://192.168.1.100:5001/api` |
+| Production | `https://api.antrianbengkel.com/api` |
+
+## 🏗️ Build Release APK
+
 ```bash
-flutter run
+# Build APK
+flutter build apk --release
+
+# Build App Bundle (for Play Store)
+flutter build appbundle --release
 ```
 
----
+Output: `build/app/outputs/flutter-apk/app-release.apk`
 
-## 🔒 Konsep Sinkronisasi Autentikasi (JWT)
-1. **Login**: User memasukkan email/password → Flutter memanggil `POST /api/auth/login`.
-2. **Simpan Token**: Jika sukses, `JWT Token`, `Role`, dan Data `User` disimpan secara permanen di memori HP menggunakan `SharedPreferences`.
-3. **API Interceptor**: File `dio_client.dart` akan mencegat setiap *request API* selanjutnya (seperti Get Antrian) dan menyisipkan:
-   `Authorization: Bearer <TOKEN>`
-4. **Auto-Login**: Saat aplikasi dimatikan dan dibuka kembali, `main.dart` akan meminta `AuthProvider` untuk mengecek token yang tersimpan dan memutuskan apakah harus melempar *user* ke Halaman Dashboard atau ke Halaman Login.
+## 📁 Project Structure
 
-## 🎨 Pedoman Desain UI Mobile-First
-UI dibangun dengan pendekatan *Glassmorphism* dan *Premium Card UI* menyerupai website aslinya. Elemen penting yang digunakan:
-*   **Bottom Navigation**: Kemudahan bernavigasi menggunakan satu tangan (Layanan, Antrian, Notifikasi, Profil).
-*   **Empty States & Skeleton Loading**: *Placeholder* animasi cerdas saat mengambil data API untuk UX yang responsif (menghindari blank screen).
-*   **Pull to Refresh**: Mengambil ulang status pembaruan antrian secara real-time dengan mengusap layar ke bawah.
-*   **Snackbar/Toast**: Pemberitahuan kilat di bawah layar usai *action* penting (misal: "Nomor antrian berhasil dibatalkan").
+```
+lib/
+├── core/
+│   ├── config/         # Environment config
+│   ├── constants/      # Colors, spacing, constants
+│   ├── network/        # Dio client with retry
+│   ├── theme/          # Light + Dark theme
+│   ├── utils/          # Helpers, validators
+│   └── widgets/        # Reusable widgets
+├── features/
+│   ├── admin/          # Admin panel (CRUD)
+│   ├── antrian/        # Queue screens
+│   ├── auth/           # Login, Register
+│   ├── home/           # Customer shell
+│   ├── montir/         # Mechanic panel
+│   ├── notifikasi/     # Notifications
+│   ├── onboarding/     # Onboarding
+│   ├── profil/         # Profile + Settings
+│   └── splash/         # Splash screen
+├── models/             # Data models
+├── providers/          # State management
+├── routes/             # GoRouter config
+├── services/           # API services
+└── main.dart           # App entry point
+```
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+flutter test
+
+# Run with coverage
+flutter test --coverage
+```
+
+## 📋 Release Checklist
+
+- [ ] Update `applicationId` in `android/app/build.gradle.kts`
+- [ ] Create release keystore
+- [ ] Update `env_config.dart` production URL
+- [ ] Run `flutter analyze` (0 errors)
+- [ ] Run `flutter test` (all pass)
+- [ ] Build release APK: `flutter build apk --release`
+- [ ] Test on physical device
+- [ ] Test all roles: Pelanggan, Admin, Montir
+
+## 👥 Roles
+
+| Role | Dashboard | Features |
+|------|-----------|----------|
+| Pelanggan | Customer Dashboard | Ambil antrian, riwayat, notifikasi |
+| Admin | Admin Panel | CRUD layanan/jadwal/user, queue mgmt |
+| Montir | Mechanic Panel | Task management, status update |
+
+## 📜 API Endpoints Used
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/register` | Register |
+| GET | `/api/antrian` | List antrian |
+| POST | `/api/antrian` | Create antrian |
+| PUT | `/api/antrian/:id/batal` | Cancel antrian |
+| PUT | `/api/antrian/:id/dilayani` | Start service |
+| PUT | `/api/antrian/:id/selesai` | Complete |
+| GET | `/api/layanan` | List services |
+| GET | `/api/notifikasi` | Notifications |
+| PUT | `/api/notifikasi/read-all` | Mark all read |
+| GET | `/api/laporan/hari-ini` | Daily report |

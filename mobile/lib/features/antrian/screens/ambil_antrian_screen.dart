@@ -87,56 +87,60 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.successLight,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.check_circle, color: AppColors.success, size: 56),
-              ),
-              const SizedBox(height: 20),
-              Text('Antrian Berhasil!', style: Theme.of(ctx).textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              if (antrian != null) ...[
-                Text(
-                  'Nomor Anda: ${antrian['nomor_antrian']}',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.primary,
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Tanggal: ${antrian['tanggal']} • Slot: ${antrian['slot_waktu']?.toString().substring(0, 5) ?? '-'}',
-                  style: Theme.of(ctx).textTheme.bodyMedium,
-                ),
-              ],
-              const SizedBox(height: 24),
-              AppButton(
-                text: 'Kembali ke Dashboard',
-                icon: Icons.home_rounded,
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                  context.go('/customer');
-                },
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.successLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Antrian Berhasil!', style: Theme.of(ctx).textTheme.headlineMedium),
+                  const SizedBox(height: 8),
+                  if (antrian != null) ...[
+                    Text(
+                      'Nomor Anda: ${antrian['nomor_antrian']}',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Tanggal: ${antrian['tanggal']} • Slot: ${antrian['slot_waktu']?.toString().substring(0, 5) ?? '-'}',
+                      style: Theme.of(ctx).textTheme.bodyMedium,
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  AppButton(
+                    text: 'Kembali ke Dashboard',
+                    icon: Icons.home_rounded,
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      context.go('/customer');
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },

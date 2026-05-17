@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import '../constants/app_colors.dart';
 
 class AppLoading extends StatelessWidget {
@@ -15,18 +16,11 @@ class AppLoading extends StatelessWidget {
           const SizedBox(
             width: 48,
             height: 48,
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-              strokeWidth: 3,
-            ),
+            child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
           ),
           if (message != null) ...[
             const SizedBox(height: 16),
-            Text(
-              message!,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(message!, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
           ],
         ],
       ),
@@ -34,6 +28,7 @@ class AppLoading extends StatelessWidget {
   }
 }
 
+// =================== EMPTY STATE ===================
 class AppEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -60,24 +55,13 @@ class AppEmptyState extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                shape: BoxShape.circle,
-              ),
+              decoration: const BoxDecoration(color: AppColors.surfaceVariant, shape: BoxShape.circle),
               child: Icon(icon, size: 56, color: AppColors.textMuted),
             ),
             const SizedBox(height: 24),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
+            Text(title, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(subtitle, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
             if (buttonText != null && onButtonPressed != null) ...[
               const SizedBox(height: 24),
               ElevatedButton.icon(
@@ -93,27 +77,177 @@ class AppEmptyState extends StatelessWidget {
   }
 }
 
+// =================== ERROR STATE ===================
+class AppErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+
+  const AppErrorState({super.key, this.message = 'Terjadi kesalahan', this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(color: AppColors.errorLight, shape: BoxShape.circle),
+              child: const Icon(Icons.error_outline_rounded, size: 56, color: AppColors.error),
+            ),
+            const SizedBox(height: 24),
+            Text('Oops!', style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(message, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
+            if (onRetry != null) ...[
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                label: const Text('Coba Lagi'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =================== SHIMMER SKELETON ===================
 class ShimmerBox extends StatelessWidget {
   final double width;
   final double height;
   final double borderRadius;
 
-  const ShimmerBox({
-    super.key,
-    required this.width,
-    required this.height,
-    this.borderRadius = 12,
-  });
+  const ShimmerBox({super.key, required this.width, required this.height, this.borderRadius = 12});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.border,
-        borderRadius: BorderRadius.circular(borderRadius),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Shimmer.fromColors(
+      baseColor: isDark ? AppColors.surfaceVariantDark : AppColors.border,
+      highlightColor: isDark ? AppColors.borderDark : AppColors.surfaceVariant,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
       ),
+    );
+  }
+}
+
+// =================== SHIMMER LIST SKELETON ===================
+class ShimmerListSkeleton extends StatelessWidget {
+  final int itemCount;
+  const ShimmerListSkeleton({super.key, this.itemCount = 5});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              ShimmerBox(width: 56, height: 56, borderRadius: 14),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShimmerBox(width: double.infinity, height: 14, borderRadius: 6),
+                    const SizedBox(height: 8),
+                    ShimmerBox(width: 120, height: 10, borderRadius: 6),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// =================== SHIMMER CARD SKELETON ===================
+class ShimmerCardSkeleton extends StatelessWidget {
+  const ShimmerCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ShimmerBox(width: double.infinity, height: 120, borderRadius: 20),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: ShimmerBox(width: double.infinity, height: 80, borderRadius: 16)),
+              const SizedBox(width: 12),
+              Expanded(child: ShimmerBox(width: double.infinity, height: 80, borderRadius: 16)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          ShimmerBox(width: 150, height: 18, borderRadius: 8),
+          const SizedBox(height: 12),
+          ShimmerBox(width: double.infinity, height: 80, borderRadius: 16),
+          const SizedBox(height: 8),
+          ShimmerBox(width: double.infinity, height: 80, borderRadius: 16),
+        ],
+      ),
+    );
+  }
+}
+
+// =================== LOADING OVERLAY ===================
+class LoadingOverlay extends StatelessWidget {
+  final bool isLoading;
+  final Widget child;
+  final String? message;
+
+  const LoadingOverlay({super.key, required this.isLoading, required this.child, this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (isLoading)
+          Container(
+            color: Colors.black.withValues(alpha: 0.3),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20)],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3)),
+                    if (message != null) ...[
+                      const SizedBox(height: 16),
+                      Text(message!, style: Theme.of(context).textTheme.bodyMedium),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
