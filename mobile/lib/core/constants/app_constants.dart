@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import '../config/env_config.dart';
 
 class AppConstants {
   AppConstants._();
@@ -6,10 +6,8 @@ class AppConstants {
   static const String appName = 'Antrian Bengkel';
   static const String appTagline = 'Sistem Antrian Digital Premium';
 
-  // API Base URL — auto-detect platform
-  // Web (Chrome): localhost | Android Emulator: 10.0.2.2 | Real Device: your local IP
-  static String get baseUrl =>
-      kIsWeb ? 'http://localhost:5001/api' : 'http://10.0.2.2:5001/api';
+  // API Base URL — using EnvConfig
+  static String get baseUrl => EnvConfig.baseUrl;
 
   // Storage Keys
   static const String tokenKey = 'antrian_auth_token';

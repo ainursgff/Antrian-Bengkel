@@ -125,6 +125,24 @@ class AdminService {
     }
   }
 
+  Future<Map<String, dynamic>> createJadwal(Map<String, dynamic> data) async {
+    try {
+      final res = await _dio.post('/jadwal', data: data);
+      return res.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      return {'success': false, 'error': _extractError(e)};
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteJadwal(int id) async {
+    try {
+      final res = await _dio.delete('/jadwal/$id');
+      return res.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      return {'success': false, 'error': _extractError(e)};
+    }
+  }
+
   // =================== USERS ===================
   Future<List<UserModel>> fetchUsers() async {
     try {

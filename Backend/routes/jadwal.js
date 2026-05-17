@@ -28,6 +28,9 @@ router.post('/', adminMiddleware, async (req, res) => {
     res.status(201).json({ success: true, message: 'Jadwal berhasil ditambahkan', id: result.insertId });
   } catch (error) {
     console.error(error);
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: 'Jadwal untuk hari ini sudah ada' });
+    }
     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
   }
 });

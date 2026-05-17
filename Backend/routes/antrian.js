@@ -309,6 +309,10 @@ router.put('/:id/panggil', adminMiddleware, async (req, res) => {
   const { id } = req.params;
   const { montir_id } = req.body || {};
 
+  if (!montir_id) {
+    return res.status(400).json({ error: 'Montir harus dipilih untuk melayani kendaraan ini' });
+  }
+
   try {
     const [rows] = await pool.query(`SELECT * FROM antrian WHERE id = ?`, [id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Antrian tidak ditemukan' });
@@ -316,12 +320,10 @@ router.put('/:id/panggil', adminMiddleware, async (req, res) => {
     const antrian = rows[0];
     if (antrian.status !== 'menunggu') return res.status(400).json({ error: 'Hanya status menunggu yang dapat dipanggil' });
 
-    const updateQuery = montir_id 
-      ? `UPDATE antrian SET status = 'dipanggil', montir_id = ? WHERE id = ?`
-      : `UPDATE antrian SET status = 'dipanggil' WHERE id = ?`;
-    const updateParams = montir_id ? [montir_id, id] : [id];
-
-    await pool.query(updateQuery, updateParams);
+    await pool.query(
+      `UPDATE antrian SET status = 'dipanggil', montir_id = ? WHERE id = ?`,
+      [montir_id, id]
+    );
 
     await pool.query(
       `INSERT INTO notifikasi (antrian_id, pesan, tipe) VALUES (?, ?, 'panggilan')`,

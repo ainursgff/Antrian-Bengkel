@@ -150,7 +150,7 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
             Row(
               children: [
                 if (a.status == 'menunggu') ...[
-                  _actionBtn('Panggil', AppColors.info, Icons.campaign, () => _doAction(context, provider.panggilAntrian(a.id))),
+                  _actionBtn('Panggil', AppColors.info, Icons.campaign, () => _showPilihMontir(context, a, provider)),
                   SizedBox(width: 8),
                   _actionBtn('Batal', AppColors.error, Icons.cancel, () => _doAction(context, provider.batalkanAntrian(a.id))),
                 ],
@@ -163,6 +163,48 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
           ],
         ],
       ),
+    );
+  }
+
+  void _showPilihMontir(BuildContext context, AntrianModel a, AdminProvider provider) {
+    if (provider.montirList.isEmpty) {
+      Helpers.showSnackbar(context, 'Tidak ada data montir tersedia', isError: true);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text('Pilih Montir', style: Theme.of(context).textTheme.titleLarge),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text('Antrian ${a.nomorAntrian} - ${a.namaPelanggan ?? ""}', style: Theme.of(context).textTheme.bodySmall),
+              ),
+              SizedBox(height: 16),
+              ...provider.montirList.map((m) => ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: CircleAvatar(backgroundColor: AppColors.primaryLight, child: Icon(Icons.build, color: AppColors.primary, size: 20)),
+                title: Text(m.nama, style: TextStyle(fontWeight: FontWeight.w700)),
+                trailing: Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _doAction(context, provider.panggilAntrian(a.id, montirId: m.id));
+                },
+              )),
+            ],
+          ),
+        );
+      },
     );
   }
 

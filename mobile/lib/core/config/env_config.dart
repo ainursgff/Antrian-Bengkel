@@ -31,9 +31,9 @@ class EnvConfig {
     }
   }
 
-  // Development — auto-detect platform
+  // Development — auto-detect platform (192.168.1.5 is your laptop's Wi-Fi IP)
   static String get _devBaseUrl =>
-      kIsWeb ? 'http://localhost:5001/api' : 'http://10.0.2.2:5001/api';
+      kIsWeb ? 'http://localhost:5001/api' : 'http://192.168.1.5:5001/api';
 
   // Staging (change to your staging server IP)
   static String get _stagingBaseUrl =>

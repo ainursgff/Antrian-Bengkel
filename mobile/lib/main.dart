@@ -11,6 +11,7 @@ import 'providers/notifikasi_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'routes/app_router.dart';
+import 'package:go_router/go_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,27 +48,28 @@ void main() async {
         ChangeNotifierProvider(create: (_) => NotifikasiProvider()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
       ],
-      child: const AntrianBengkelApp(),
+      child: AntrianBengkelApp(appRouter: AppRouter(authProvider).router),
     ),
   );
 }
 
 class AntrianBengkelApp extends StatelessWidget {
-  const AntrianBengkelApp({super.key});
+  final GoRouter appRouter;
+  const AntrianBengkelApp({super.key, required this.appRouter});
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final appRouter = AppRouter(authProvider);
-
-    return MaterialApp.router(
-      title: AppConstants.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeProvider.mode,
-      routerConfig: appRouter.router,
+    return Consumer2<AuthProvider, ThemeProvider>(
+      builder: (context, auth, theme, _) {
+        return MaterialApp.router(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: auth.isAuthenticated ? theme.mode : ThemeMode.light,
+          routerConfig: appRouter,
+        );
+      },
     );
   }
 }

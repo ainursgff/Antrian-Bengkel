@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/theme_provider.dart';
 import 'jadwal_mgmt_screen.dart';
 import 'user_mgmt_screen.dart';
+import 'layanan_mgmt_screen.dart';
 
 class AdminMoreScreen extends StatelessWidget {
   const AdminMoreScreen({super.key});
@@ -68,9 +70,42 @@ class AdminMoreScreen extends StatelessWidget {
             _buildMenuItem(context, Icons.people_rounded, 'Kelola Pengguna', 'CRUD admin, petugas, pelanggan', () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const UserMgmtScreen()));
             }),
+            _buildMenuItem(context, Icons.build_rounded, 'Kelola Layanan', 'CRUD layanan servis bengkel', () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananMgmtScreen()));
+            }),
             _buildMenuItem(context, Icons.calendar_month_rounded, 'Jadwal Operasional', 'Atur jam buka, tutup, libur', () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const JadwalMgmtScreen()));
             }),
+
+            // Theme toggle
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Theme.of(context).dividerColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Tampilan', style: Theme.of(context).textTheme.titleLarge),
+                  SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(Provider.of<ThemeProvider>(context).isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      SizedBox(width: 12),
+                      Expanded(child: Text('Mode Gelap', style: Theme.of(context).textTheme.bodyLarge)),
+                      Switch.adaptive(
+                        value: Provider.of<ThemeProvider>(context).isDark,
+                        activeColor: AppColors.primary,
+                        onChanged: (_) => Provider.of<ThemeProvider>(context, listen: false).toggleTheme(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
 
             SizedBox(height: 24),
 

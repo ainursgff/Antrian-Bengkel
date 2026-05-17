@@ -17,7 +17,6 @@ class _AdminShellState extends State<AdminShell> {
   final List<Widget> _screens = const [
     AdminDashboardScreen(),
     AntrianMgmtScreen(),
-    LayananMgmtScreen(),
     AdminMoreScreen(),
   ];
 
@@ -35,17 +34,12 @@ class _AdminShellState extends State<AdminShell> {
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard_rounded),
-            label: 'Dashboard',
+            label: 'Home',
           ),
           NavigationDestination(
             icon: Icon(Icons.confirmation_num_outlined),
             selectedIcon: Icon(Icons.confirmation_num_rounded),
             label: 'Antrian',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.build_outlined),
-            selectedIcon: Icon(Icons.build_rounded),
-            label: 'Layanan',
           ),
           NavigationDestination(
             icon: Icon(Icons.menu_rounded),

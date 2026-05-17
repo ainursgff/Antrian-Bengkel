@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../providers/notifikasi_provider.dart';
 import '../../antrian/screens/dashboard_screen.dart';
 import '../../antrian/screens/riwayat_screen.dart';
@@ -80,15 +78,6 @@ class _CustomerShellState extends State<CustomerShell> {
           );
         },
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () => context.push('/ambil-antrian'),
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              icon: Icon(Icons.add_rounded),
-              label: Text('Ambil Antrian', style: TextStyle(fontWeight: FontWeight.w700)),
-            )
-          : null,
     );
   }
 }

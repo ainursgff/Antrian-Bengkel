@@ -66,7 +66,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               Container(
                                 width: 44, height: 44,
                                 decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-                                child: Icon(Icons.admin_panel_settings, color: Colors.white, size: 24),
+                                child: Icon(Icons.directions_car_rounded, color: Colors.white, size: 24),
                               ),
                               SizedBox(width: 12),
                               Expanded(
@@ -74,7 +74,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text('Admin Dashboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+                                    Text('Admin', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
                                     Text('Halo, ${auth.user?['nama'] ?? 'Admin'}', style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
                                   ],
                                 ),
@@ -103,7 +103,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             physics: const NeverScrollableScrollPhysics(),
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
-                            childAspectRatio: 1.5,
+                            childAspectRatio: 1.0,
                             children: [
                               StatCard(title: 'Total', value: '${hariIni.total}', icon: Icons.confirmation_num, color: AppColors.primary),
                               StatCard(title: 'Menunggu', value: '${hariIni.menunggu}', icon: Icons.hourglass_top, color: AppColors.statusMenunggu),
@@ -228,12 +228,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildActionButton(BuildContext context, AntrianModel a, AdminProvider provider) {
     switch (a.status) {
       case 'menunggu':
-        return _miniBtn(context, 'Panggil', AppColors.info, () async {
-          final r = await provider.panggilAntrian(a.id);
-          if (context.mounted) {
-            r['success'] == true ? Helpers.showSuccess(context, 'Berhasil dipanggil') : Helpers.showSnackbar(context, r['error'] ?? 'Gagal', isError: true);
-          }
-        });
+        return _miniBtn(context, 'Panggil', AppColors.info, () => _showPilihMontir(context, a, provider));
       case 'dipanggil':
         return _miniBtn(context, 'Layani', AppColors.statusDilayani, () async {
           final r = await provider.setDilayani(a.id);
@@ -251,6 +246,51 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       default:
         return SizedBox.shrink();
     }
+  }
+
+  void _showPilihMontir(BuildContext context, AntrianModel a, AdminProvider provider) {
+    if (provider.montirList.isEmpty) {
+      Helpers.showSnackbar(context, 'Tidak ada data montir tersedia', isError: true);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text('Pilih Montir', style: Theme.of(context).textTheme.titleLarge),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text('Antrian ${a.nomorAntrian} - ${a.namaPelanggan ?? ""}', style: Theme.of(context).textTheme.bodySmall),
+              ),
+              SizedBox(height: 16),
+              ...provider.montirList.map((m) => ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: CircleAvatar(backgroundColor: AppColors.primaryLight, child: Icon(Icons.build, color: AppColors.primary, size: 20)),
+                title: Text(m.nama, style: TextStyle(fontWeight: FontWeight.w700)),
+                trailing: Icon(Icons.chevron_right),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final r = await provider.panggilAntrian(a.id, montirId: m.id);
+                  if (context.mounted) {
+                    r['success'] == true ? Helpers.showSuccess(context, 'Berhasil dipanggil oleh ${m.nama}') : Helpers.showSnackbar(context, r['error'] ?? 'Gagal', isError: true);
+                  }
+                },
+              )),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _miniBtn(BuildContext context, String text, Color color, VoidCallback onTap) {

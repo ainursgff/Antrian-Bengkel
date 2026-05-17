@@ -136,6 +136,22 @@ class AdminProvider with ChangeNotifier {
     return r;
   }
 
+  Future<Map<String, dynamic>> createJadwal(Map<String, dynamic> data) async {
+    _isSubmitting = true; notifyListeners();
+    final r = await _service.createJadwal(data);
+    if (r['success'] == true) await loadJadwal();
+    _isSubmitting = false; notifyListeners();
+    return r;
+  }
+
+  Future<Map<String, dynamic>> deleteJadwal(int id) async {
+    _isSubmitting = true; notifyListeners();
+    final r = await _service.deleteJadwal(id);
+    if (r['success'] == true) await loadJadwal();
+    _isSubmitting = false; notifyListeners();
+    return r;
+  }
+
   // ========== USERS ==========
   Future<void> loadUsers() async {
     _isLoading = true; notifyListeners();

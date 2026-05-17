@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/montir_provider.dart';
+import '../../../providers/theme_provider.dart';
 
 class MontirProfilScreen extends StatelessWidget {
   const MontirProfilScreen({super.key});
@@ -98,6 +99,38 @@ class MontirProfilScreen extends StatelessWidget {
                   _infoRow(context, Icons.person, 'Nama', user['nama'] ?? '-'),
                   _infoRow(context, Icons.email, 'Email', user['email'] ?? '-'),
                   _infoRow(context, Icons.phone, 'No. HP', user['no_hp'] ?? '-'),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 24),
+
+            // Theme toggle
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Theme.of(context).dividerColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Tampilan', style: Theme.of(context).textTheme.titleLarge),
+                  SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(Provider.of<ThemeProvider>(context).isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      SizedBox(width: 12),
+                      Expanded(child: Text('Mode Gelap', style: Theme.of(context).textTheme.bodyLarge)),
+                      Switch.adaptive(
+                        value: Provider.of<ThemeProvider>(context).isDark,
+                        activeColor: AppColors.primary,
+                        onChanged: (_) => Provider.of<ThemeProvider>(context, listen: false).toggleTheme(),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
