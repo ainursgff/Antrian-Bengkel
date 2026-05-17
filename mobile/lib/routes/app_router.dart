@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 
+import '../features/auth/screens/login_screen.dart';
+import '../features/antrian/screens/customer_dashboard_screen.dart';
+
 // Dummy screens for now
-class LoginScreen extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Login Screen'))); }
-class CustomerDashboardScreen extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Customer Dashboard'))); }
 class AdminDashboardScreen extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Admin Dashboard'))); }
 class MontirDashboardScreen extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Montir Dashboard'))); }
 
