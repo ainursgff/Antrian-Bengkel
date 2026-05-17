@@ -26,8 +26,8 @@ class _JadwalMgmtScreenState extends State<JadwalMgmtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Jadwal Operasional')),
+      
+      appBar: AppBar(title: Text('Jadwal Operasional')),
       body: Consumer<AdminProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.jadwal.isEmpty) {
@@ -48,9 +48,9 @@ class _JadwalMgmtScreenState extends State<JadwalMgmtScreen> {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: j.isLibur ? AppColors.error.withValues(alpha: 0.3) : AppColors.border),
+                    border: Border.all(color: j.isLibur ? AppColors.error.withValues(alpha: 0.3) : Theme.of(context).dividerColor),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -65,13 +65,13 @@ class _JadwalMgmtScreenState extends State<JadwalMgmtScreen> {
                         color: j.isLibur ? AppColors.error : AppColors.primary, size: 22,
                       ),
                     ),
-                    title: Text(j.namaHari, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    title: Text(j.namaHari, style: TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text(
                       j.isLibur ? 'Libur' : '${Helpers.formatTime(j.jamBuka)} - ${Helpers.formatTime(j.jamTutup)} • Kuota: ${j.kuotaPerSlot}',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.edit_rounded, size: 20),
+                      icon: Icon(Icons.edit_rounded, size: 20),
                       onPressed: () => _showEditForm(context, j),
                     ),
                   ),
@@ -104,19 +104,19 @@ class _JadwalMgmtScreenState extends State<JadwalMgmtScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(child: Container(width: 48, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)))),
-                    const SizedBox(height: 20),
+                    Center(child: Container(width: 48, height: 4, decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2)))),
+                    SizedBox(height: 20),
                     Text('Edit Jadwal: ${j.namaHari}', style: Theme.of(ctx).textTheme.headlineSmall),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Hari Libur'),
+                      title: Text('Hari Libur'),
                       value: isLibur,
-                      activeColor: AppColors.error,
+                      activeThumbColor: AppColors.error,
                       onChanged: (v) => setSheetState(() => isLibur = v),
                     ),
                     if (!isLibur) ...[
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       Row(
                         children: [
                           Expanded(
@@ -135,7 +135,7 @@ class _JadwalMgmtScreenState extends State<JadwalMgmtScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12),
                           Expanded(
                             child: GestureDetector(
                               onTap: () async {
@@ -154,16 +154,16 @@ class _JadwalMgmtScreenState extends State<JadwalMgmtScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14),
                       TextField(
                         controller: kuotaCtrl,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(labelText: 'Kuota Montir per Slot', prefixIcon: Icon(Icons.people)),
                       ),
                     ],
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Consumer<AdminProvider>(
-                      builder: (_, prov, __) {
+                      builder: (_, prov, _) {
                         return AppButton(
                           text: 'Simpan Perubahan',
                           isLoading: prov.isSubmitting,

@@ -13,13 +13,13 @@ class AppLoading extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 48,
             height: 48,
             child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
           ),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(message!, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
           ],
         ],
@@ -55,18 +55,18 @@ class AppEmptyState extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(color: AppColors.surfaceVariant, shape: BoxShape.circle),
-              child: Icon(icon, size: 56, color: AppColors.textMuted),
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, shape: BoxShape.circle),
+              child: Icon(icon, size: 56, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text(title, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(subtitle, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
             if (buttonText != null && onButtonPressed != null) ...[
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: onButtonPressed,
-                icon: const Icon(Icons.add_circle_outline, size: 20),
+                icon: Icon(Icons.add_circle_outline, size: 20),
                 label: Text(buttonText!),
               ),
             ],
@@ -95,18 +95,18 @@ class AppErrorState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(color: AppColors.errorLight, shape: BoxShape.circle),
-              child: const Icon(Icons.error_outline_rounded, size: 56, color: AppColors.error),
+              child: Icon(Icons.error_outline_rounded, size: 56, color: AppColors.error),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text('Oops!', style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(message, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
             if (onRetry != null) ...[
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 20),
-                label: const Text('Coba Lagi'),
+                icon: Icon(Icons.refresh_rounded, size: 20),
+                label: Text('Coba Lagi'),
               ),
             ],
           ],
@@ -128,8 +128,8 @@ class ShimmerBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Shimmer.fromColors(
-      baseColor: isDark ? AppColors.surfaceVariantDark : AppColors.border,
-      highlightColor: isDark ? AppColors.borderDark : AppColors.surfaceVariant,
+      baseColor: isDark ? Colors.grey[800]! : Theme.of(context).dividerColor,
+      highlightColor: isDark ? Colors.grey[700]! : Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Container(
         width: width,
         height: height,
@@ -159,13 +159,13 @@ class ShimmerListSkeleton extends StatelessWidget {
           child: Row(
             children: [
               ShimmerBox(width: 56, height: 56, borderRadius: 14),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ShimmerBox(width: double.infinity, height: 14, borderRadius: 6),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     ShimmerBox(width: 120, height: 10, borderRadius: 6),
                   ],
                 ),
@@ -190,19 +190,19 @@ class ShimmerCardSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ShimmerBox(width: double.infinity, height: 120, borderRadius: 20),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Row(
             children: [
               Expanded(child: ShimmerBox(width: double.infinity, height: 80, borderRadius: 16)),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(child: ShimmerBox(width: double.infinity, height: 80, borderRadius: 16)),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           ShimmerBox(width: 150, height: 18, borderRadius: 8),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ShimmerBox(width: double.infinity, height: 80, borderRadius: 16),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           ShimmerBox(width: double.infinity, height: 80, borderRadius: 16),
         ],
       ),
@@ -237,9 +237,9 @@ class LoadingOverlay extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3)),
+                    SizedBox(width: 40, height: 40, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3)),
                     if (message != null) ...[
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       Text(message!, style: Theme.of(context).textTheme.bodyMedium),
                     ],
                   ],

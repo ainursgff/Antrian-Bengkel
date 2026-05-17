@@ -26,7 +26,7 @@ class TaskCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: sc.withValues(alpha: 0.3)),
         boxShadow: [
@@ -46,12 +46,12 @@ class TaskCard extends StatelessWidget {
                   decoration: BoxDecoration(color: sc.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                   child: Text(antrian.nomorAntrian, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: sc)),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(antrian.namaPelanggan ?? '-', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      Text(antrian.namaPelanggan ?? '-', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                       if (antrian.noHp != null && antrian.noHp!.isNotEmpty)
                         Text(antrian.noHp!, style: Theme.of(context).textTheme.bodySmall),
                     ],
@@ -64,7 +64,7 @@ class TaskCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Helpers.getStatusIcon(antrian.status), size: 12, color: sc),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(Helpers.getStatusLabel(antrian.status), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: sc)),
                     ],
                   ),
@@ -72,9 +72,9 @@ class TaskCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             const Divider(height: 1),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
 
             // Detail rows
             _infoRow(context, Icons.build_rounded, antrian.namaLayanan ?? '-'),
@@ -90,7 +90,7 @@ class TaskCard extends StatelessWidget {
 
             // Action button
             if (onAction != null && actionLabel != null) ...[
-              const SizedBox(height: 14),
+              SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
                 height: 44,
@@ -101,7 +101,7 @@ class TaskCard extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: Icon(actionIcon ?? Icons.play_arrow_rounded, size: 20),
-                  label: Text(actionLabel!, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  label: Text(actionLabel!, style: TextStyle(fontWeight: FontWeight.w700)),
                 ),
               ),
             ],
@@ -116,10 +116,10 @@ class TaskCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.textMuted),
-          const SizedBox(width: 8),
+          Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary), maxLines: 2, overflow: TextOverflow.ellipsis),
+            child: Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface), maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
         ],
       ),

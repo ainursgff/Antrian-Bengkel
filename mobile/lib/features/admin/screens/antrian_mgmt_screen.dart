@@ -32,8 +32,8 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Kelola Antrian')),
+      
+      appBar: AppBar(title: Text('Kelola Antrian')),
       body: Consumer<AdminProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.antrian.isEmpty) {
@@ -50,7 +50,7 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 child: Row(
                   children: [
-                    _buildChip('semua', 'Semua', AppColors.textPrimary),
+                    _buildChip('semua', 'Semua', Theme.of(context).colorScheme.onSurface),
                     _buildChip('menunggu', 'Menunggu', AppColors.statusMenunggu),
                     _buildChip('dipanggil', 'Dipanggil', AppColors.statusDipanggil),
                     _buildChip('sedang_dilayani', 'Dilayani', AppColors.statusDilayani),
@@ -106,7 +106,7 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: sc.withValues(alpha: 0.3)),
       ),
@@ -120,12 +120,12 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
                 decoration: BoxDecoration(color: sc.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                 child: Text(a.nomorAntrian, style: TextStyle(fontWeight: FontWeight.w900, color: sc)),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(a.namaPelanggan ?? '-', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    Text(a.namaPelanggan ?? '-', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                     Text(a.namaLayanan ?? '-', style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
@@ -138,20 +138,20 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
             ],
           ),
           if (a.kendaraan != null && a.kendaraan!.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Row(children: [
-              Icon(Icons.directions_car, size: 14, color: AppColors.textMuted),
-              const SizedBox(width: 6),
+              Icon(Icons.directions_car, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              SizedBox(width: 6),
               Text(a.kendaraan!, style: Theme.of(context).textTheme.bodySmall),
             ]),
           ],
           if (a.isActive) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Row(
               children: [
                 if (a.status == 'menunggu') ...[
                   _actionBtn('Panggil', AppColors.info, Icons.campaign, () => _doAction(context, provider.panggilAntrian(a.id))),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   _actionBtn('Batal', AppColors.error, Icons.cancel, () => _doAction(context, provider.batalkanAntrian(a.id))),
                 ],
                 if (a.status == 'dipanggil')
@@ -183,7 +183,7 @@ class _AntrianMgmtScreenState extends State<AntrianMgmtScreen> {
           onPressed: onTap,
           style: ElevatedButton.styleFrom(backgroundColor: color, padding: const EdgeInsets.symmetric(horizontal: 8)),
           icon: Icon(icon, size: 14),
-          label: Text(label, style: const TextStyle(fontSize: 11)),
+          label: Text(label, style: TextStyle(fontSize: 11)),
         ),
       ),
     );

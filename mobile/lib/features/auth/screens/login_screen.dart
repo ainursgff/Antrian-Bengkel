@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.primaryLight,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.settings_suggest_rounded,
                       size: 56,
                       color: AppColors.primary,
@@ -93,27 +93,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       )
                       .fadeIn(duration: 400.ms),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   Text(
                     AppConstants.appName,
                     style: Theme.of(context).textTheme.headlineLarge,
                   ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
 
                   Text(
                     'Masuk ke akun Anda untuk melanjutkan',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
 
                   // Form Card
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -141,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         AppTextField(
                           controller: _passwordController,
                           label: 'Password',
@@ -163,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Consumer<AuthProvider>(
                           builder: (context, auth, _) {
                             return AppButton(
@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       .fadeIn(delay: 400.ms, duration: 500.ms)
                       .slideY(begin: 0.15, end: 0, delay: 400.ms, duration: 500.ms),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

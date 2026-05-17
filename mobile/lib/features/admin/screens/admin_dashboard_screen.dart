@@ -29,7 +29,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       body: Consumer<AdminProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.laporan == null) {
@@ -53,7 +53,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   backgroundColor: AppColors.secondary,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                         ),
@@ -66,16 +66,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               Container(
                                 width: 44, height: 44,
                                 decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-                                child: const Icon(Icons.admin_panel_settings, color: Colors.white, size: 24),
+                                child: Icon(Icons.admin_panel_settings, color: Colors.white, size: 24),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text('Admin Dashboard', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
-                                    Text('Halo, ${auth.user?['nama'] ?? 'Admin'}', style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+                                    Text('Admin Dashboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
+                                    Text('Halo, ${auth.user?['nama'] ?? 'Admin'}', style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
                                   ],
                                 ),
                               ),
@@ -96,7 +96,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         // Stat cards
                         if (hariIni != null) ...[
                           Text('Statistik Hari Ini', style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 14),
+                          SizedBox(height: 14),
                           GridView.count(
                             crossAxisCount: 2,
                             shrinkWrap: true,
@@ -113,18 +113,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ),
                         ],
 
-                        const SizedBox(height: 28),
+                        SizedBox(height: 28),
 
                         // Weekly mini chart
                         if (laporan != null && laporan.mingguan.isNotEmpty) ...[
                           Text('Tren 7 Hari Terakhir', style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 14),
+                          SizedBox(height: 14),
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(color: Theme.of(context).dividerColor),
                             ),
                             child: Column(
                               children: [
@@ -141,8 +141,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                           child: Column(
                                             mainAxisAlignment: MainAxisAlignment.end,
                                             children: [
-                                              Text('${day.total}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-                                              const SizedBox(height: 4),
+                                              Text('${day.total}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                              SizedBox(height: 4),
                                               Container(
                                                 height: 80 * pct,
                                                 decoration: BoxDecoration(
@@ -150,10 +150,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                                   borderRadius: BorderRadius.circular(6),
                                                 ),
                                               ),
-                                              const SizedBox(height: 6),
+                                              SizedBox(height: 6),
                                               Text(
                                                 day.tanggal.length >= 10 ? day.tanggal.substring(8, 10) : day.tanggal,
-                                                style: TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                                style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                               ),
                                             ],
                                           ),
@@ -167,11 +167,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ),
                         ],
 
-                        const SizedBox(height: 28),
+                        SizedBox(height: 28),
 
                         // Active antrian
                         Text('Antrian Aktif (${antrianAktif.length})', style: Theme.of(context).textTheme.headlineSmall),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         if (antrianAktif.isEmpty)
                           const AppEmptyState(
                             icon: Icons.inbox_rounded,
@@ -198,7 +198,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
@@ -209,12 +209,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
             child: Text(a.nomorAntrian, style: TextStyle(fontWeight: FontWeight.w900, color: statusColor, fontSize: 16)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(a.namaPelanggan ?? '-', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(a.namaPelanggan ?? '-', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                 Text(a.namaLayanan ?? '-', style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
@@ -249,7 +249,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           }
         });
       default:
-        return const SizedBox.shrink();
+        return SizedBox.shrink();
     }
   }
 
@@ -261,7 +261,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
         ),
         child: Text(text),
       ),

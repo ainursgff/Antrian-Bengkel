@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../models/antrian_model.dart';
 
@@ -24,10 +23,10 @@ class AntrianCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: antrian.isActive ? statusColor.withValues(alpha: 0.3) : AppColors.border,
+            color: antrian.isActive ? statusColor.withValues(alpha: 0.3) : Theme.of(context).dividerColor,
           ),
           boxShadow: [
             BoxShadow(
@@ -60,7 +59,7 @@ class AntrianCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   // Info
                   Expanded(
                     child: Column(
@@ -72,7 +71,7 @@ class AntrianCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           Helpers.formatDate(antrian.tanggal),
                           style: Theme.of(context).textTheme.bodySmall,
@@ -91,7 +90,7 @@ class AntrianCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Helpers.getStatusIcon(antrian.status), size: 14, color: statusColor),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Text(
                           Helpers.getStatusLabel(antrian.status),
                           style: TextStyle(
@@ -107,9 +106,9 @@ class AntrianCard extends StatelessWidget {
               ),
               // Detail section
               if (showDetail) ...[
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 const Divider(),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 _buildDetailRow(context, Icons.schedule, 'Estimasi', '${antrian.estimasiMenit ?? 0} menit'),
                 if (antrian.slotWaktu != null)
                   _buildDetailRow(context, Icons.access_time_filled, 'Slot Waktu', Helpers.formatTime(antrian.slotWaktu)),
@@ -132,8 +131,8 @@ class AntrianCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.textMuted),
-          const SizedBox(width: 8),
+          Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          SizedBox(width: 8),
           Text(
             '$label: ',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
@@ -141,7 +140,7 @@ class AntrianCard extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

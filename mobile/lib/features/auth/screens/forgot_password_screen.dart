@@ -74,13 +74,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Lupa Password'),
+        title: Text('Lupa Password'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -98,18 +98,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       color: AppColors.warningLight,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.lock_reset_rounded, size: 48, color: AppColors.warning),
+                    child: Icon(Icons.lock_reset_rounded, size: 48, color: AppColors.warning),
                   ),
                 ).animate().scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 500.ms, curve: Curves.easeOutBack),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 Text(
                   _emailVerified ? 'Buat Password Baru' : 'Verifikasi Email',
                   style: Theme.of(context).textTheme.headlineMedium,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   _emailVerified
                       ? 'Masukkan password baru untuk akun Anda.'
@@ -117,12 +117,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32),
 
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -143,7 +143,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
 
                       if (_emailVerified) ...[
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         AppTextField(
                           controller: _newPasswordController,
                           label: 'Password Baru',
@@ -159,7 +159,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         AppTextField(
                           controller: _confirmPasswordController,
                           label: 'Konfirmasi Password Baru',
@@ -176,7 +176,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       ],
 
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
 
                       Consumer<AuthProvider>(
                         builder: (context, auth, _) {

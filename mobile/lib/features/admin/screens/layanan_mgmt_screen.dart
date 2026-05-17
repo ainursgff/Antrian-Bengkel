@@ -27,12 +27,12 @@ class _LayananMgmtScreenState extends State<LayananMgmtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Kelola Layanan')),
+      
+      appBar: AppBar(title: Text('Kelola Layanan')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(context),
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Colors.white),
       ),
       body: Consumer<AdminProvider>(
         builder: (context, provider, _) {
@@ -54,24 +54,24 @@ class _LayananMgmtScreenState extends State<LayananMgmtScreen> {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: Container(
                       width: 44, height: 44,
                       decoration: BoxDecoration(
-                        color: l.aktif ? AppColors.primaryLight : AppColors.surfaceVariant,
+                        color: l.aktif ? AppColors.primaryLight : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.build_rounded, color: l.aktif ? AppColors.primary : AppColors.textMuted, size: 22),
+                      child: Icon(Icons.build_rounded, color: l.aktif ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant, size: 22),
                     ),
-                    title: Text(l.namaLayanan, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    title: Text(l.namaLayanan, style: TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text('${l.estimasiMenit} mnt • ${Helpers.formatRupiah(l.harga)}', style: Theme.of(context).textTheme.bodySmall),
                     trailing: PopupMenuButton(
-                      icon: const Icon(Icons.more_vert),
+                      icon: Icon(Icons.more_vert),
                       itemBuilder: (_) => [
                         const PopupMenuItem(value: 'edit', child: Text('Edit')),
                         const PopupMenuItem(value: 'delete', child: Text('Hapus')),
@@ -113,32 +113,32 @@ class _LayananMgmtScreenState extends State<LayananMgmtScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(child: Container(width: 48, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)))),
-                    const SizedBox(height: 20),
+                    Center(child: Container(width: 48, height: 4, decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2)))),
+                    SizedBox(height: 20),
                     Text(isEdit ? 'Edit Layanan' : 'Tambah Layanan', style: Theme.of(ctx).textTheme.headlineSmall),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     AppTextField(controller: namaCtrl, label: 'Nama Layanan', prefixIcon: Icons.build_outlined),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     AppTextField(controller: descCtrl, label: 'Deskripsi (Opsional)', prefixIcon: Icons.notes_outlined, maxLines: 2),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(child: AppTextField(controller: estCtrl, label: 'Estimasi (mnt)', prefixIcon: Icons.schedule, keyboardType: TextInputType.number)),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(child: AppTextField(controller: hargaCtrl, label: 'Harga (Rp)', prefixIcon: Icons.payments, keyboardType: TextInputType.number)),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Layanan Aktif'),
+                      title: Text('Layanan Aktif'),
                       value: isAktif,
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       onChanged: (v) => setSheetState(() => isAktif = v),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Consumer<AdminProvider>(
-                      builder: (_, prov, __) {
+                      builder: (_, prov, _) {
                         return AppButton(
                           text: isEdit ? 'Simpan Perubahan' : 'Tambah Layanan',
                           isLoading: prov.isSubmitting,
@@ -154,7 +154,7 @@ class _LayananMgmtScreenState extends State<LayananMgmtScreen> {
                               'harga': int.tryParse(hargaCtrl.text) ?? 0,
                               'is_aktif': isAktif ? 1 : 0,
                             };
-                            final r = isEdit ? await prov.updateLayanan(layanan!.id, data) : await prov.createLayanan(data);
+                            final r = isEdit ? await prov.updateLayanan(layanan.id, data) : await prov.createLayanan(data);
                             if (ctx.mounted) {
                               Navigator.of(ctx).pop();
                               r['success'] == true
@@ -180,10 +180,10 @@ class _LayananMgmtScreenState extends State<LayananMgmtScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Hapus Layanan'),
+        title: Text('Hapus Layanan'),
         content: Text('Hapus "${l.namaLayanan}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Batal')),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
@@ -194,7 +194,7 @@ class _LayananMgmtScreenState extends State<LayananMgmtScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Hapus'),
+            child: Text('Hapus'),
           ),
         ],
       ),

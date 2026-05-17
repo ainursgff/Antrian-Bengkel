@@ -31,7 +31,7 @@ class _MontirDashboardScreenState extends State<MontirDashboardScreen> {
     final user = auth.user ?? {};
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       body: Consumer<MontirProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.antrian.isEmpty) {
@@ -52,7 +52,7 @@ class _MontirDashboardScreenState extends State<MontirDashboardScreen> {
                   backgroundColor: AppColors.secondary,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(colors: [Color(0xFF1E293B), Color(0xFF0F172A)]),
                       ),
                       child: SafeArea(
@@ -66,18 +66,18 @@ class _MontirDashboardScreenState extends State<MontirDashboardScreen> {
                                 child: Center(
                                   child: Text(
                                     (user['nama'] ?? 'M').toString().substring(0, 1).toUpperCase(),
-                                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
+                                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 14),
+                              SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text('Halo, ${user['nama'] ?? 'Petugas'} 🔧', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
-                                    const Text('Panel Petugas Bengkel', style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+                                    Text('Halo, ${user['nama'] ?? 'Petugas'} 🔧', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+                                    Text('Panel Petugas Bengkel', style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
                                   ],
                                 ),
                               ),
@@ -99,19 +99,19 @@ class _MontirDashboardScreenState extends State<MontirDashboardScreen> {
                         Row(
                           children: [
                             _statMini(context, '${provider.totalAktif}', 'Aktif', AppColors.info, Icons.engineering),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             _statMini(context, '${provider.totalDikerjakan}', 'Selesai', AppColors.success, Icons.check_circle),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             _statMini(context, '${provider.antrian.length}', 'Total', AppColors.primary, Icons.list_alt),
                           ],
                         ).animate().fadeIn(duration: 300.ms),
 
-                        const SizedBox(height: 28),
+                        SizedBox(height: 28),
 
                         // Active tasks
                         if (provider.antrianAktif.isNotEmpty) ...[
                           Text('Tugas Aktif', style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 14),
+                          SizedBox(height: 14),
                           ...provider.antrianAktif.map((a) {
                             if (a.status == 'dipanggil') {
                               return TaskCard(
@@ -130,15 +130,15 @@ class _MontirDashboardScreenState extends State<MontirDashboardScreen> {
                               onAction: () => _confirmSelesai(context, a, provider),
                             );
                           }),
-                          const SizedBox(height: 28),
+                          SizedBox(height: 28),
                         ],
 
                         // Waiting
                         if (provider.antrianMenunggu.isNotEmpty) ...[
                           Text('Menunggu Dipanggil (${provider.antrianMenunggu.length})', style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 14),
+                          SizedBox(height: 14),
                           ...provider.antrianMenunggu.map((a) => TaskCard(antrian: a)),
-                          const SizedBox(height: 28),
+                          SizedBox(height: 28),
                         ],
 
                         // Empty
@@ -165,14 +165,14 @@ class _MontirDashboardScreenState extends State<MontirDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Column(
           children: [
             Icon(icon, color: color, size: 24),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
             Text(label, style: Theme.of(context).textTheme.bodySmall),
           ],
@@ -195,17 +195,17 @@ class _MontirDashboardScreenState extends State<MontirDashboardScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Selesaikan Tugas'),
+        title: Text('Selesaikan Tugas'),
         content: Text('Tandai antrian ${a.nomorAntrian} sebagai selesai?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Batal')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               _doAction(context, provider.setSelesai(a.id));
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
-            child: const Text('Ya, Selesai'),
+            child: Text('Ya, Selesai'),
           ),
         ],
       ),

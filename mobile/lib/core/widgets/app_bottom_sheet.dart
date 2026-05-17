@@ -65,12 +65,12 @@ class AppBottomSheet {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 48, color: confirmColor ?? Theme.of(ctx).colorScheme.primary),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
           ],
           Text(title, style: Theme.of(ctx).textTheme.headlineSmall, textAlign: TextAlign.center),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(message, style: Theme.of(ctx).textTheme.bodyMedium, textAlign: TextAlign.center),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Row(
             children: [
               Expanded(
@@ -79,7 +79,7 @@ class AppBottomSheet {
                   child: Text(cancelText),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(ctx, true),

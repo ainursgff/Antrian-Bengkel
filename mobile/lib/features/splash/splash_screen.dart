@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.settings_suggest_rounded,
                 size: 56,
                 color: Colors.white,
@@ -85,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   curve: Curves.easeOutBack,
                 )
                 .fadeIn(duration: 400.ms),
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
             Text(
               AppConstants.appName,
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -96,16 +96,16 @@ class _SplashScreenState extends State<SplashScreen> {
                 .animate()
                 .fadeIn(delay: 300.ms, duration: 500.ms)
                 .slideY(begin: 0.3, end: 0, delay: 300.ms, duration: 500.ms),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               AppConstants.appTagline,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMuted,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             )
                 .animate()
                 .fadeIn(delay: 600.ms, duration: 500.ms),
-            const SizedBox(height: 48),
+            SizedBox(height: 48),
             SizedBox(
               width: 32,
               height: 32,

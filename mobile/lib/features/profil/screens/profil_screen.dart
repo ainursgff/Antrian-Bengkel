@@ -17,7 +17,7 @@ class ProfilScreen extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(title: Text('Profil')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -39,28 +39,28 @@ class ProfilScreen extends StatelessWidget {
                     child: Center(
                       child: Text(
                         (user['nama'] ?? 'U').toString().substring(0, 1).toUpperCase(),
-                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+                        style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text(user['nama'] ?? 'Pengguna', style: Theme.of(context).textTheme.headlineSmall),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(user['email'] ?? '', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(8)),
                     child: Text(
                       Helpers.getRoleLabel(auth.role),
-                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 12),
+                      style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 12),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Info rows
             Container(
@@ -75,7 +75,7 @@ class ProfilScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Informasi Akun', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildInfoRow(context, Icons.person, 'Nama', user['nama'] ?? '-'),
                   _buildInfoRow(context, Icons.email, 'Email', user['email'] ?? '-'),
                   _buildInfoRow(context, Icons.phone, 'No. HP', user['no_hp'] ?? '-'),
@@ -83,7 +83,7 @@ class ProfilScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Theme toggle
             Container(
@@ -98,11 +98,11 @@ class ProfilScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Pengaturan', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Row(
                     children: [
-                      Icon(themeProv.isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded, size: 20, color: AppColors.textMuted),
-                      const SizedBox(width: 12),
+                      Icon(themeProv.isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      SizedBox(width: 12),
                       Expanded(child: Text('Mode Gelap', style: Theme.of(context).textTheme.bodyLarge)),
                       Switch.adaptive(
                         value: themeProv.isDark,
@@ -115,7 +115,7 @@ class ProfilScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Logout button
             SizedBox(
@@ -126,22 +126,22 @@ class ProfilScreen extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: const Text('Logout'),
-                      content: const Text('Apakah Anda yakin ingin keluar?'),
+                      title: Text('Logout'),
+                      content: Text('Apakah Anda yakin ingin keluar?'),
                       actions: [
-                        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Batal')),
+                        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text('Batal')),
                         ElevatedButton(
                           onPressed: () { Navigator.of(ctx).pop(); auth.logout(); context.go('/login'); },
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-                          child: const Text('Logout'),
+                          child: Text('Logout'),
                         ),
                       ],
                     ),
                   );
                 },
-                style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: const BorderSide(color: AppColors.error)),
-                icon: const Icon(Icons.logout_rounded),
-                label: const Text('Keluar dari Akun'),
+                style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: BorderSide(color: AppColors.error)),
+                icon: Icon(Icons.logout_rounded),
+                label: Text('Keluar dari Akun'),
               ),
             ),
           ],
@@ -155,8 +155,8 @@ class ProfilScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.textMuted),
-          const SizedBox(width: 12),
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          SizedBox(width: 12),
           SizedBox(width: 70, child: Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600))),
           Expanded(child: Text(value, style: Theme.of(context).textTheme.bodyMedium)),
         ],

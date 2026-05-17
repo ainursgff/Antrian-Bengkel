@@ -15,8 +15,8 @@ class MontirProfilScreen extends StatelessWidget {
     final user = auth.user ?? {};
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Profil Petugas')),
+      
+      appBar: AppBar(title: Text('Profil Petugas')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -26,9 +26,9 @@ class MontirProfilScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Column(
                 children: [
@@ -38,40 +38,40 @@ class MontirProfilScreen extends StatelessWidget {
                     child: Center(
                       child: Text(
                         (user['nama'] ?? 'M').toString().substring(0, 1).toUpperCase(),
-                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+                        style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text(user['nama'] ?? 'Petugas', style: Theme.of(context).textTheme.headlineSmall),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(user['email'] ?? '', style: Theme.of(context).textTheme.bodyMedium),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(color: AppColors.info.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                    child: const Text('Petugas / Montir', style: TextStyle(color: AppColors.info, fontWeight: FontWeight.w700, fontSize: 12)),
+                    child: Text('Petugas / Montir', style: TextStyle(color: AppColors.info, fontWeight: FontWeight.w700, fontSize: 12)),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Work stats
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Statistik Hari Ini', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _statRow(context, Icons.engineering, 'Tugas Aktif', '${montir.totalAktif}', AppColors.info),
                   _statRow(context, Icons.check_circle, 'Selesai', '${montir.totalDikerjakan}', AppColors.success),
                   _statRow(context, Icons.list_alt, 'Total Antrian', '${montir.antrian.length}', AppColors.primary),
@@ -79,22 +79,22 @@ class MontirProfilScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Account info
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Informasi Akun', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _infoRow(context, Icons.person, 'Nama', user['nama'] ?? '-'),
                   _infoRow(context, Icons.email, 'Email', user['email'] ?? '-'),
                   _infoRow(context, Icons.phone, 'No. HP', user['no_hp'] ?? '-'),
@@ -102,7 +102,7 @@ class MontirProfilScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Logout
             SizedBox(
@@ -114,22 +114,22 @@ class MontirProfilScreen extends StatelessWidget {
                     context: context,
                     builder: (ctx) => AlertDialog(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      title: const Text('Logout'),
-                      content: const Text('Apakah Anda yakin ingin keluar?'),
+                      title: Text('Logout'),
+                      content: Text('Apakah Anda yakin ingin keluar?'),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+                        TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Batal')),
                         ElevatedButton(
                           onPressed: () { Navigator.pop(ctx); auth.logout(); context.go('/login'); },
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-                          child: const Text('Logout'),
+                          child: Text('Logout'),
                         ),
                       ],
                     ),
                   );
                 },
-                style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: const BorderSide(color: AppColors.error)),
-                icon: const Icon(Icons.logout_rounded),
-                label: const Text('Keluar dari Akun'),
+                style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: BorderSide(color: AppColors.error)),
+                icon: Icon(Icons.logout_rounded),
+                label: Text('Keluar dari Akun'),
               ),
             ),
           ],
@@ -144,7 +144,7 @@ class MontirProfilScreen extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, size: 20, color: color),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Text(label, style: Theme.of(context).textTheme.bodyMedium),
           const Spacer(),
           Text(value, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: color)),
@@ -158,10 +158,10 @@ class MontirProfilScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.textMuted),
-          const SizedBox(width: 12),
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          SizedBox(width: 12),
           SizedBox(width: 70, child: Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600))),
-          Expanded(child: Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textPrimary))),
+          Expanded(child: Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface))),
         ],
       ),
     );

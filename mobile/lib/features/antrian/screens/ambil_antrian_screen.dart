@@ -98,38 +98,38 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                     width: 48,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.border,
+                      color: Theme.of(context).dividerColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.successLight,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
+                    child: Icon(Icons.check_circle, color: AppColors.success, size: 48),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text('Antrian Berhasil!', style: Theme.of(ctx).textTheme.headlineMedium),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   if (antrian != null) ...[
                     Text(
                       'Nomor Anda: ${antrian['nomor_antrian']}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                         color: AppColors.primary,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Text(
                       'Tanggal: ${antrian['tanggal']} • Slot: ${antrian['slot_waktu']?.toString().substring(0, 5) ?? '-'}',
                       style: Theme.of(ctx).textTheme.bodyMedium,
                     ),
                   ],
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   AppButton(
                     text: 'Kembali ke Dashboard',
                     icon: Icons.home_rounded,
@@ -150,13 +150,13 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Ambil Antrian'),
+        title: Text('Ambil Antrian'),
       ),
       body: Consumer<AntrianProvider>(
         builder: (context, provider, _) {
@@ -182,17 +182,17 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                     children: [
                       Text('Pilih Layanan', style: Theme.of(context).textTheme.headlineSmall)
                           .animate().fadeIn(duration: 300.ms),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       Text(
                         'Anda dapat memilih lebih dari satu layanan.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // Layanan cards
                       ...provider.layanan.map((l) => _buildLayananTile(l)),
 
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
 
                       // Input Kendaraan
                       AppTextField(
@@ -202,7 +202,7 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                         prefixIcon: Icons.directions_car_outlined,
                         textCapitalization: TextCapitalization.characters,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // Catatan
                       AppTextField(
@@ -213,7 +213,7 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                         maxLines: 3,
                         textCapitalization: TextCapitalization.sentences,
                       ),
-                      const SizedBox(height: 100), // space for bottom bar
+                      SizedBox(height: 100), // space for bottom bar
                     ],
                   ),
                 ),
@@ -224,8 +224,8 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    border: const Border(top: BorderSide(color: AppColors.border)),
+                    color: Theme.of(context).colorScheme.surface,
+                    border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
@@ -255,11 +255,11 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                             ),
                             Text(
                               '~$_totalEstimasi menit',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textMuted),
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         AppButton(
                           text: 'Ambil Antrian Sekarang',
                           icon: Icons.confirmation_num_rounded,
@@ -294,10 +294,10 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryLight : AppColors.surface,
+          color: isSelected ? AppColors.primaryLight : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? AppColors.primary : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -311,15 +311,15 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                 color: isSelected ? AppColors.primary : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.textMuted,
+                  color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.onSurfaceVariant,
                   width: 2,
                 ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 18)
+                  ? Icon(Icons.check, color: Colors.white, size: 18)
                   : null,
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,10 +329,10 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
-                      color: isSelected ? AppColors.primaryDark : AppColors.textPrimary,
+                      color: isSelected ? AppColors.primaryDark : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     '${l.estimasiMenit} menit',
                     style: Theme.of(context).textTheme.bodySmall,

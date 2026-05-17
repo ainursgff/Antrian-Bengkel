@@ -30,7 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final user = auth.user ?? {};
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       body: Consumer<AntrianProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.layanan.isEmpty) {
@@ -52,7 +52,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   backgroundColor: AppColors.secondary,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -76,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: Center(
                                   child: Text(
                                     (user['nama'] ?? 'U').toString().substring(0, 1).toUpperCase(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 20,
                                       fontWeight: FontWeight.w800,
@@ -84,7 +84,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 14),
+                              SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,14 +92,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   children: [
                                     Text(
                                       'Halo, ${user['nama'] ?? 'Pelanggan'} 👋',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w800,
                                         color: Colors.white,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    const Text(
+                                    SizedBox(height: 4),
+                                    Text(
                                       'Selamat datang di Antrian Bengkel',
                                       style: TextStyle(
                                         fontSize: 13,
@@ -126,18 +126,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         // Active Queue Section
                         _buildActiveQueueSection(context, provider),
 
-                        const SizedBox(height: 28),
+                        SizedBox(height: 28),
 
                         // Layanan Section
                         Text('Layanan Tersedia', style: Theme.of(context).textTheme.headlineSmall)
                             .animate().fadeIn(delay: 200.ms, duration: 400.ms),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         ...provider.layanan.take(5).map((l) => Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -148,13 +148,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 color: AppColors.primaryLight,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.build_rounded, color: AppColors.primary, size: 22),
+                              child: Icon(Icons.build_rounded, color: AppColors.primary, size: 22),
                             ),
-                            title: Text(l.namaLayanan, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                            title: Text(l.namaLayanan, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                             subtitle: Text('${l.estimasiMenit} menit', style: Theme.of(context).textTheme.bodySmall),
                             trailing: Text(
                               Helpers.formatRupiah(l.harga),
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.success),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.success),
                             ),
                           ),
                         )),
@@ -179,33 +179,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(28),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.confirmation_num_outlined, size: 48, color: AppColors.textMuted),
+              child: Icon(Icons.confirmation_num_outlined, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Text('Belum Ada Antrian', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Anda belum memiliki antrian aktif hari ini.\nAmbil antrian untuk memulai.',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => context.push('/ambil-antrian'),
-              icon: const Icon(Icons.add_circle_outline, size: 20),
-              label: const Text('Ambil Antrian Baru'),
+              icon: Icon(Icons.add_circle_outline, size: 20),
+              label: Text('Ambil Antrian Baru'),
             ),
           ],
         ),
@@ -217,7 +217,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Antrian Aktif', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(24),
@@ -241,13 +241,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           child: Column(
             children: [
-              const Text('Nomor Antrian Anda', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
+              Text('Nomor Antrian Anda', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
+              SizedBox(height: 8),
               Text(
                 antrian.nomorAntrian,
-                style: const TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
+                style: TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               // Status + Detail
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -259,15 +259,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Helpers.getStatusIcon(antrian.status), color: Colors.white, size: 18),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       Helpers.getStatusLabel(antrian.status),
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               // Info row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -280,7 +280,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               // Cancel button
               if (antrian.canCancel) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
@@ -298,10 +298,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white54),
+                      side: BorderSide(color: Colors.white54),
                     ),
-                    icon: const Icon(Icons.cancel_outlined, size: 18),
-                    label: const Text('Batalkan Antrian'),
+                    icon: Icon(Icons.cancel_outlined, size: 18),
+                    label: Text('Batalkan Antrian'),
                   ),
                 ),
               ],
@@ -317,11 +317,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 14, color: Colors.white70),
-        const SizedBox(width: 4),
+        SizedBox(width: 4),
         Flexible(
           child: Text(
             text,
-            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

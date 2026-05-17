@@ -58,12 +58,12 @@ class _MontirShellState extends State<MontirShell> {
                 icon: Badge(
                   isLabelVisible: notifProv.unreadCount > 0,
                   label: Text('${notifProv.unreadCount}'),
-                  child: const Icon(Icons.notifications_outlined),
+                  child: Icon(Icons.notifications_outlined),
                 ),
                 selectedIcon: Badge(
                   isLabelVisible: notifProv.unreadCount > 0,
                   label: Text('${notifProv.unreadCount}'),
-                  child: const Icon(Icons.notifications_rounded),
+                  child: Icon(Icons.notifications_rounded),
                 ),
                 label: 'Notif',
               ),

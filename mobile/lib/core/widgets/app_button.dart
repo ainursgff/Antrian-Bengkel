@@ -40,7 +40,7 @@ class AppButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(icon, size: 20),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(text),
                 ],
               )

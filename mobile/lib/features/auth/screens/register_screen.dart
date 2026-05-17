@@ -74,21 +74,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 color: AppColors.successLight,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle, color: AppColors.success, size: 56),
+              child: Icon(Icons.check_circle, color: AppColors.success, size: 56),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text(
               'Pendaftaran Berhasil!',
               style: Theme.of(ctx).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Akun Anda telah dibuat. Silakan login dengan email dan password yang sudah didaftarkan.',
               style: Theme.of(ctx).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             AppButton(
               text: 'Login Sekarang',
               icon: Icons.login_rounded,
@@ -106,13 +106,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Daftar Akun'),
+        title: Text('Daftar Akun'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -126,17 +126,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'Buat Akun Baru',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ).animate().fadeIn(duration: 400.ms),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   'Isi data diri Anda untuk mendaftar ke sistem antrian bengkel.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
-                const SizedBox(height: 32),
+                SizedBox(height: 32),
 
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -158,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       AppTextField(
                         controller: _emailController,
                         label: 'Email',
@@ -170,14 +170,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       AppTextField(
                         controller: _noHpController,
                         label: 'No. HP',
                         prefixIcon: Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       AppTextField(
                         controller: _passwordController,
                         label: 'Password',
@@ -193,7 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       AppTextField(
                         controller: _confirmPasswordController,
                         label: 'Konfirmasi Password',
@@ -208,7 +208,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                       Consumer<AuthProvider>(
                         builder: (context, auth, _) {
                           return AppButton(
@@ -223,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ).animate().fadeIn(delay: 200.ms, duration: 500.ms).slideY(begin: 0.1, end: 0),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

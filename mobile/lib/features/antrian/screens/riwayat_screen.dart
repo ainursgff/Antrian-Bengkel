@@ -25,8 +25,8 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Riwayat Antrian')),
+      
+      appBar: AppBar(title: Text('Riwayat Antrian')),
       body: Consumer<AntrianProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.riwayat.isEmpty) {

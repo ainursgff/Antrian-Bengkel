@@ -47,26 +47,26 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       case 'konfirmasi': return AppColors.success;
       case 'pembatalan': return AppColors.error;
       case 'pengingat': return AppColors.warning;
-      default: return AppColors.textMuted;
+      default: return Theme.of(context).colorScheme.onSurfaceVariant;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       appBar: AppBar(
-        title: const Text('Notifikasi'),
+        title: Text('Notifikasi'),
         actions: [
           Consumer<NotifikasiProvider>(
             builder: (context, prov, _) {
               if (prov.unreadCount > 0) {
                 return TextButton(
                   onPressed: () => prov.markAllRead(),
-                  child: const Text('Tandai Dibaca'),
+                  child: Text('Tandai Dibaca'),
                 );
               }
-              return const SizedBox.shrink();
+              return SizedBox.shrink();
             },
           ),
         ],
@@ -92,7 +92,7 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
               padding: const EdgeInsets.all(20),
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: prov.notifikasi.length,
-              separatorBuilder: (_, i) => const SizedBox(height: 8),
+              separatorBuilder: (_, i) => SizedBox(height: 8),
               itemBuilder: (context, i) {
                 final notif = prov.notifikasi[i];
                 return _buildNotifTile(context, notif, prov)
@@ -117,9 +117,9 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: notif.isRead ? AppColors.surface : color.withValues(alpha: 0.05),
+          color: notif.isRead ? Theme.of(context).colorScheme.surface : color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: notif.isRead ? AppColors.border : color.withValues(alpha: 0.2)),
+          border: Border.all(color: notif.isRead ? Theme.of(context).dividerColor : color.withValues(alpha: 0.2)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,22 +129,22 @@ class _NotifikasiScreenState extends State<NotifikasiScreen> {
               decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
               child: Icon(_getNotifIcon(notif.tipe), color: color, size: 20),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (notif.nomorAntrian != null)
                     Text(notif.nomorAntrian!, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     notif.pesan,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: notif.isRead ? FontWeight.w400 : FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(Helpers.formatDate(notif.sentAt), style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),

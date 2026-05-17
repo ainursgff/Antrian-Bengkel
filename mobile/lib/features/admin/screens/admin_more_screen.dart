@@ -15,8 +15,8 @@ class AdminMoreScreen extends StatelessWidget {
     final user = auth.user ?? {};
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Pengaturan')),
+      
+      appBar: AppBar(title: Text('Pengaturan')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -26,9 +26,9 @@ class AdminMoreScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Row(
                 children: [
@@ -38,22 +38,22 @@ class AdminMoreScreen extends StatelessWidget {
                     child: Center(
                       child: Text(
                         (user['nama'] ?? 'A').toString().substring(0, 1).toUpperCase(),
-                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900),
+                        style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(user['nama'] ?? 'Admin', style: Theme.of(context).textTheme.titleLarge),
                         Text(user['email'] ?? '', style: Theme.of(context).textTheme.bodySmall),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-                          child: const Text('Admin', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.error)),
+                          child: Text('Admin', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.error)),
                         ),
                       ],
                     ),
@@ -62,7 +62,7 @@ class AdminMoreScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Menu items
             _buildMenuItem(context, Icons.people_rounded, 'Kelola Pengguna', 'CRUD admin, petugas, pelanggan', () {
@@ -72,7 +72,7 @@ class AdminMoreScreen extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const JadwalMgmtScreen()));
             }),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Logout
             SizedBox(
@@ -84,10 +84,10 @@ class AdminMoreScreen extends StatelessWidget {
                     context: context,
                     builder: (ctx) => AlertDialog(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      title: const Text('Logout'),
-                      content: const Text('Apakah Anda yakin ingin keluar?'),
+                      title: Text('Logout'),
+                      content: Text('Apakah Anda yakin ingin keluar?'),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+                        TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Batal')),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.pop(ctx);
@@ -95,15 +95,15 @@ class AdminMoreScreen extends StatelessWidget {
                             context.go('/login');
                           },
                           style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-                          child: const Text('Logout'),
+                          child: Text('Logout'),
                         ),
                       ],
                     ),
                   );
                 },
-                style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: const BorderSide(color: AppColors.error)),
-                icon: const Icon(Icons.logout_rounded),
-                label: const Text('Keluar dari Akun'),
+                style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: BorderSide(color: AppColors.error)),
+                icon: Icon(Icons.logout_rounded),
+                label: Text('Keluar dari Akun'),
               ),
             ),
           ],
@@ -116,9 +116,9 @@ class AdminMoreScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -127,9 +127,9 @@ class AdminMoreScreen extends StatelessWidget {
           decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(12)),
           child: Icon(icon, color: AppColors.primary, size: 22),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
         subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+        trailing: Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurfaceVariant),
         onTap: onTap,
       ),
     );

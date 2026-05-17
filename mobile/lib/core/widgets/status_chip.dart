@@ -27,7 +27,7 @@ class StatusChip extends StatelessWidget {
         children: [
           if (showIcon) ...[
             Icon(icon, size: 14, color: color),
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
           ],
           Text(
             label,

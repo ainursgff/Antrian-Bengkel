@@ -40,12 +40,12 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Kelola Pengguna')),
+      
+      appBar: AppBar(title: Text('Kelola Pengguna')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(context),
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.person_add, color: Colors.white),
+        child: Icon(Icons.person_add, color: Colors.white),
       ),
       body: Consumer<AdminProvider>(
         builder: (context, provider, _) {
@@ -64,9 +64,9 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
                   onChanged: (v) => setState(() => _search = v),
                   decoration: InputDecoration(
                     hintText: 'Cari nama atau email...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: Icon(Icons.search),
                     suffixIcon: _search.isNotEmpty
-                        ? IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() => _search = ''))
+                        ? IconButton(icon: Icon(Icons.close), onPressed: () => setState(() => _search = ''))
                         : null,
                   ),
                 ),
@@ -92,7 +92,7 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
                   child: Text('${filtered.length} pengguna', style: Theme.of(context).textTheme.bodySmall),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               // User list
               Expanded(
                 child: filtered.isEmpty
@@ -121,8 +121,8 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
       child: FilterChip(
         selected: isSelected,
         label: Text(label),
-        labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: isSelected ? Colors.white : AppColors.textPrimary),
-        backgroundColor: AppColors.surfaceVariant,
+        labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         selectedColor: AppColors.primary,
         checkmarkColor: Colors.white,
         onSelected: (_) => setState(() => _filterRole = value),
@@ -143,9 +143,9 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -153,12 +153,12 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
           backgroundColor: rc.withValues(alpha: 0.1),
           child: Text(u.nama.isNotEmpty ? u.nama[0].toUpperCase() : '?', style: TextStyle(color: rc, fontWeight: FontWeight.w800)),
         ),
-        title: Text(u.nama, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+        title: Text(u.nama, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(u.email, style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(color: rc.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
@@ -167,7 +167,7 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
           ],
         ),
         trailing: PopupMenuButton(
-          icon: const Icon(Icons.more_vert),
+          icon: Icon(Icons.more_vert),
           itemBuilder: (_) => [
             const PopupMenuItem(value: 'edit', child: Text('Edit')),
             const PopupMenuItem(value: 'delete', child: Text('Hapus')),
@@ -203,20 +203,20 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(child: Container(width: 48, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)))),
-                    const SizedBox(height: 20),
+                    Center(child: Container(width: 48, height: 4, decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2)))),
+                    SizedBox(height: 20),
                     Text(isEdit ? 'Edit Pengguna' : 'Tambah Pengguna', style: Theme.of(ctx).textTheme.headlineSmall),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     AppTextField(controller: namaCtrl, label: 'Nama', prefixIcon: Icons.person_outline, textCapitalization: TextCapitalization.words),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     AppTextField(controller: emailCtrl, label: 'Email', prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     AppTextField(controller: noHpCtrl, label: 'No. HP', prefixIcon: Icons.phone_outlined, keyboardType: TextInputType.phone),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     AppTextField(controller: passCtrl, label: isEdit ? 'Password (kosongkan jika tidak diubah)' : 'Password', prefixIcon: Icons.lock_outline, obscureText: true),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14),
                     DropdownButtonFormField<String>(
-                      value: role,
+                      initialValue: role,
                       decoration: const InputDecoration(labelText: 'Role', prefixIcon: Icon(Icons.badge_outlined)),
                       items: const [
                         DropdownMenuItem(value: 'pelanggan', child: Text('Pelanggan')),
@@ -225,9 +225,9 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
                       ],
                       onChanged: (v) => setSheetState(() => role = v ?? 'pelanggan'),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Consumer<AdminProvider>(
-                      builder: (_, prov, __) {
+                      builder: (_, prov, _) {
                         return AppButton(
                           text: isEdit ? 'Simpan' : 'Tambah',
                           isLoading: prov.isSubmitting,
@@ -243,7 +243,7 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
                               'role': role,
                             };
                             if (passCtrl.text.isNotEmpty) data['password'] = passCtrl.text;
-                            final r = isEdit ? await prov.updateUser(user!.id, data) : await prov.createUser(data);
+                            final r = isEdit ? await prov.updateUser(user.id, data) : await prov.createUser(data);
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
                               r['success'] == true
@@ -269,10 +269,10 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Hapus Pengguna'),
+        title: Text('Hapus Pengguna'),
         content: Text('Hapus "${u.nama}" (${u.email})?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Batal')),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
@@ -282,7 +282,7 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: const Text('Hapus'),
+            child: Text('Hapus'),
           ),
         ],
       ),

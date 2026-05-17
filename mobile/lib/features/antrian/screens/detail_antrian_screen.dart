@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../models/antrian_model.dart';
 
@@ -13,8 +12,8 @@ class DetailAntrianScreen extends StatelessWidget {
     final statusColor = Helpers.getStatusColor(antrian.status);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Detail Antrian')),
+      
+      appBar: AppBar(title: Text('Detail Antrian')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -33,13 +32,13 @@ class DetailAntrianScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text('Nomor Antrian', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
+                  Text('Nomor Antrian', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
+                  SizedBox(height: 8),
                   Text(
                     antrian.nomorAntrian,
-                    style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
+                    style: TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
@@ -50,10 +49,10 @@ class DetailAntrianScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Helpers.getStatusIcon(antrian.status), color: Colors.white, size: 18),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Text(
                           Helpers.getStatusLabel(antrian.status),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
                         ),
                       ],
                     ),
@@ -62,22 +61,22 @@ class DetailAntrianScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
 
             // Detail card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Informasi Antrian', style: Theme.of(context).textTheme.headlineSmall),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _buildRow(context, Icons.calendar_today, 'Tanggal', Helpers.formatDate(antrian.tanggal)),
                   _buildRow(context, Icons.access_time, 'Slot Waktu', Helpers.formatTime(antrian.slotWaktu)),
                   _buildRow(context, Icons.build_rounded, 'Layanan', antrian.namaLayanan ?? '-'),
@@ -90,7 +89,7 @@ class DetailAntrianScreen extends StatelessWidget {
                   if (antrian.rincianHarga != null && antrian.rincianHarga!.isNotEmpty) ...[
                     const Divider(height: 24),
                     Text('Rincian Harga', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(antrian.rincianHarga!, style: Theme.of(context).textTheme.bodyMedium),
                   ],
                 ],
@@ -108,14 +107,14 @@ class DetailAntrianScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppColors.textMuted),
-          const SizedBox(width: 12),
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          SizedBox(width: 12),
           SizedBox(
             width: 100,
             child: Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
           ),
           Expanded(
-            child: Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textPrimary)),
+            child: Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
           ),
         ],
       ),

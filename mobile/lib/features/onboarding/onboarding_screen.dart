@@ -53,7 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      
       body: SafeArea(
         child: Column(
           children: [
@@ -65,7 +65,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Text(
                   'Lewati',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textMuted,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ),
@@ -103,7 +103,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               curve: Curves.easeOutBack,
                             )
                             .fadeIn(duration: 400.ms),
-                        const SizedBox(height: 48),
+                        SizedBox(height: 48),
                         Text(
                           item.title,
                           style: Theme.of(context).textTheme.headlineMedium,
@@ -112,7 +112,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             .animate(key: ValueKey('title_$index'))
                             .fadeIn(delay: 200.ms, duration: 400.ms)
                             .slideY(begin: 0.2, end: 0),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           item.description,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -145,13 +145,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         width: isActive ? 32 : 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: isActive ? AppColors.primary : AppColors.border,
+                          color: isActive ? AppColors.primary : Theme.of(context).dividerColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
                     }),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32),
                   AppButton(
                     text: _currentPage == _items.length - 1 ? 'Mulai Sekarang' : 'Selanjutnya',
                     icon: _currentPage == _items.length - 1 ? Icons.rocket_launch_rounded : Icons.arrow_forward_rounded,

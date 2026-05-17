@@ -25,8 +25,8 @@ class _MontirRiwayatScreenState extends State<MontirRiwayatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Riwayat Pekerjaan')),
+      
+      appBar: AppBar(title: Text('Riwayat Pekerjaan')),
       body: Consumer<MontirProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.antrian.isEmpty) {
@@ -63,7 +63,7 @@ class _MontirRiwayatScreenState extends State<MontirRiwayatScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.statusSelesai.withValues(alpha: 0.2)),
       ),
@@ -75,28 +75,28 @@ class _MontirRiwayatScreenState extends State<MontirRiwayatScreen> {
               color: AppColors.statusSelesai.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(a.nomorAntrian, style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.statusSelesai)),
+            child: Text(a.nomorAntrian, style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.statusSelesai)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(a.namaPelanggan ?? '-', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(a.namaPelanggan ?? '-', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                 Text(a.namaLayanan ?? '-', style: Theme.of(context).textTheme.bodySmall),
                 if (a.kendaraan != null && a.kendaraan!.isNotEmpty)
-                  Text(a.kendaraan!, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textMuted)),
+                  Text(a.kendaraan!, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Icon(Icons.check_circle, color: AppColors.statusSelesai, size: 20),
-              const SizedBox(height: 4),
+              Icon(Icons.check_circle, color: AppColors.statusSelesai, size: 20),
+              SizedBox(height: 4),
               Text(
                 a.totalHarga != null ? Helpers.formatRupiah(a.totalHarga) : '-',
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.success),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.success),
               ),
             ],
           ),
