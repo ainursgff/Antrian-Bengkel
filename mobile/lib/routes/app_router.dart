@@ -7,6 +7,8 @@ import '../features/onboarding/onboarding_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
+import '../features/home/screens/customer_shell.dart';
+import '../features/antrian/screens/ambil_antrian_screen.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
@@ -39,17 +41,22 @@ class AppRouter {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      // Customer — Phase 2
+      // Customer — with bottom nav
       GoRoute(
         path: '/customer',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Dashboard Pelanggan'),
+        builder: (context, state) => const CustomerShell(),
       ),
-      // Admin — Phase 2
+      // Ambil Antrian (pushed on top of customer shell)
+      GoRoute(
+        path: '/ambil-antrian',
+        builder: (context, state) => const AmbilAntrianScreen(),
+      ),
+      // Admin — Phase 3
       GoRoute(
         path: '/admin',
         builder: (context, state) => const _PlaceholderScreen(title: 'Dashboard Admin'),
       ),
-      // Montir — Phase 2
+      // Montir — Phase 3
       GoRoute(
         path: '/montir',
         builder: (context, state) => const _PlaceholderScreen(title: 'Dashboard Petugas'),
@@ -60,16 +67,13 @@ class AppRouter {
       final role = authProvider.role;
       final loc = state.matchedLocation;
 
-      // Publicly accessible routes
       final publicRoutes = ['/', '/onboarding', '/login', '/register', '/forgot-password'];
       final isPublic = publicRoutes.contains(loc);
 
-      // If not logged in and trying to access protected route, redirect to login
       if (!loggedIn && !isPublic) {
         return '/login';
       }
 
-      // If logged in and trying to access login/register, redirect to dashboard
       if (loggedIn && (loc == '/login' || loc == '/register')) {
         if (role == AppConstants.roleAdmin) return '/admin';
         if (role == AppConstants.roleMontir) return '/montir';
@@ -81,7 +85,6 @@ class AppRouter {
   );
 }
 
-// Temporary placeholder until Phase 2 screens are built
 class _PlaceholderScreen extends StatelessWidget {
   final String title;
   const _PlaceholderScreen({required this.title});
@@ -92,7 +95,7 @@ class _PlaceholderScreen extends StatelessWidget {
       appBar: AppBar(title: Text(title)),
       body: Center(
         child: Text(
-          '$title\n(Phase 2)',
+          '$title\n(Segera Hadir)',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineSmall,
         ),

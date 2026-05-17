@@ -1,0 +1,117 @@
+import 'package:dio/dio.dart';
+import '../core/network/dio_client.dart';
+import '../models/antrian_model.dart';
+import '../models/layanan_model.dart';
+import '../models/notifikasi_model.dart';
+
+class AntrianService {
+  final Dio _dio = DioClient().dio;
+
+  // GET /api/antrian — riwayat antrian pelanggan
+  Future<List<AntrianModel>> fetchRiwayat() async {
+    try {
+      final response = await _dio.get('/antrian');
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((json) => AntrianModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // GET /api/antrian/aktif — antrian aktif pelanggan hari ini
+  Future<AntrianModel?> fetchAntrianAktif() async {
+    try {
+      final response = await _dio.get('/antrian/aktif');
+      if (response.statusCode == 200 && response.data != null && response.data is Map) {
+        return AntrianModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // POST /api/antrian — ambil antrian baru
+  Future<Map<String, dynamic>> ambilAntrian({
+    required List<int> layananIds,
+    String? kendaraan,
+    String? catatan,
+  }) async {
+    try {
+      final response = await _dio.post('/antrian', data: {
+        'layanan_id': layananIds.join(','),
+        'kendaraan': kendaraan ?? '',
+        'catatan': catatan ?? '',
+      });
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      if (e.response?.data is Map) {
+        return {
+          'success': false,
+          'error': (e.response!.data as Map)['error'] ?? 'Gagal mengambil antrian',
+        };
+      }
+      return {'success': false, 'error': 'Tidak dapat terhubung ke server'};
+    }
+  }
+
+  // PUT /api/antrian/:id/batalkan
+  Future<Map<String, dynamic>> batalkanAntrian(int id) async {
+    try {
+      final response = await _dio.put('/antrian/$id/batalkan');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      if (e.response?.data is Map) {
+        return {
+          'success': false,
+          'error': (e.response!.data as Map)['error'] ?? 'Gagal membatalkan',
+        };
+      }
+      return {'success': false, 'error': 'Tidak dapat terhubung ke server'};
+    }
+  }
+
+  // GET /api/layanan — daftar layanan aktif
+  Future<List<LayananModel>> fetchLayanan() async {
+    try {
+      final response = await _dio.get('/layanan');
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((json) => LayananModel.fromJson(json as Map<String, dynamic>))
+            .where((l) => l.aktif)
+            .toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // GET /api/notifikasi
+  Future<List<NotifikasiModel>> fetchNotifikasi() async {
+    try {
+      final response = await _dio.get('/notifikasi');
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((json) => NotifikasiModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // PUT /api/notifikasi/read-all
+  Future<void> markAllNotifikasiRead() async {
+    try {
+      await _dio.put('/notifikasi/read-all');
+    } catch (_) {
+      // Silent fail
+    }
+  }
+}

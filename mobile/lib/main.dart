@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 import 'providers/auth_provider.dart';
+import 'providers/antrian_provider.dart';
 import 'routes/app_router.dart';
 
 void main() async {
@@ -30,6 +31,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
+        ChangeNotifierProvider(create: (_) => AntrianProvider()),
       ],
       child: const AntrianBengkelApp(),
     ),
