@@ -5,11 +5,37 @@ const router = express.Router();
 
 // GET /api/layanan — Semua layanan aktif (publik)
 router.get('/', async (req, res) => {
+  const { kategori_id } = req.query;
   try {
-    const [rows] = await pool.query(
-      'SELECT * FROM layanan ORDER BY id ASC'
-    );
-    res.json(rows);
+    let query = `
+      SELECT l.*, k.nama_kategori 
+      FROM layanan l 
+      LEFT JOIN kategori_kendaraan k ON l.kategori_id = k.id 
+    `;
+    const params = [];
+    
+    if (kategori_id) {
+      query += ' WHERE l.kategori_id = ? ';
+      params.push(kategori_id);
+    }
+    
+    query += ' ORDER BY l.id ASC';
+    
+    const [rows] = await pool.query(query, params);
+    const formatted = rows.map(r => ({
+      id: r.id,
+      kategori_id: r.kategori_id,
+      nama_layanan: r.nama_layanan,
+      deskripsi: r.deskripsi,
+      estimasi_menit: r.estimasi_menit,
+      harga: r.harga,
+      is_aktif: r.is_aktif,
+      kategori: r.kategori_id ? {
+        id: r.kategori_id,
+        nama_kategori: r.nama_kategori
+      } : null
+    }));
+    res.json(formatted);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Terjadi kesalahan pada server' });
@@ -18,13 +44,14 @@ router.get('/', async (req, res) => {
 
 // POST /api/layanan — UC7: Tambah layanan (admin)
 router.post('/', adminMiddleware, async (req, res) => {
-  const { nama_layanan, deskripsi, estimasi_menit, harga, is_aktif } = req.body;
+  const { kategori_id, nama_layanan, deskripsi, estimasi_menit, harga, is_aktif } = req.body;
+  if (!kategori_id) return res.status(400).json({ error: 'Kategori kendaraan wajib dipilih' });
   if (!nama_layanan) return res.status(400).json({ error: 'Nama layanan wajib diisi' });
 
   try {
     const [result] = await pool.query(
-      'INSERT INTO layanan (nama_layanan, deskripsi, estimasi_menit, harga, is_aktif) VALUES (?, ?, ?, ?, ?)',
-      [nama_layanan, deskripsi || null, estimasi_menit || 30, harga || 0, is_aktif !== undefined ? is_aktif : 1]
+      'INSERT INTO layanan (kategori_id, nama_layanan, deskripsi, estimasi_menit, harga, is_aktif) VALUES (?, ?, ?, ?, ?, ?)',
+      [kategori_id, nama_layanan, deskripsi || null, estimasi_menit || 30, harga || 0, is_aktif !== undefined ? is_aktif : 1]
     );
     res.status(201).json({ success: true, message: 'Layanan berhasil ditambahkan', id: result.insertId });
   } catch (error) {
@@ -36,12 +63,14 @@ router.post('/', adminMiddleware, async (req, res) => {
 // PUT /api/layanan/:id — UC7: Edit layanan (admin)
 router.put('/:id', adminMiddleware, async (req, res) => {
   const { id } = req.params;
-  const { nama_layanan, deskripsi, estimasi_menit, harga, is_aktif } = req.body;
+  const { kategori_id, nama_layanan, deskripsi, estimasi_menit, harga, is_aktif } = req.body;
+  if (!kategori_id) return res.status(400).json({ error: 'Kategori kendaraan wajib dipilih' });
+  if (!nama_layanan) return res.status(400).json({ error: 'Nama layanan wajib diisi' });
 
   try {
     const [result] = await pool.query(
-      'UPDATE layanan SET nama_layanan=?, deskripsi=?, estimasi_menit=?, harga=?, is_aktif=? WHERE id=?',
-      [nama_layanan, deskripsi || null, estimasi_menit || 30, harga || 0, is_aktif !== undefined ? is_aktif : 1, id]
+      'UPDATE layanan SET kategori_id=?, nama_layanan=?, deskripsi=?, estimasi_menit=?, harga=?, is_aktif=? WHERE id=?',
+      [kategori_id, nama_layanan, deskripsi || null, estimasi_menit || 30, harga || 0, is_aktif !== undefined ? is_aktif : 1, id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Layanan tidak ditemukan' });
     res.json({ success: true, message: 'Layanan berhasil diperbarui' });

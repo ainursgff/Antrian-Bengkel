@@ -24,6 +24,7 @@ export default function MainPage() {
 
   const [layanan, setLayanan] = useState([]);
   const [jadwal, setJadwal] = useState([]);
+  const [kategoriList, setKategoriList] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
   const [waktu, setWaktu] = useState(new Date());
@@ -36,6 +37,7 @@ export default function MainPage() {
   const [selectedLayanan, setSelectedLayanan] = useState([]);
   const [kendaraan, setKendaraan] = useState('');
   const [catatan, setCatatan] = useState('');
+  const [selectedKategori, setSelectedKategori] = useState(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
 
@@ -81,11 +83,13 @@ export default function MainPage() {
   useEffect(() => {
     Promise.all([
       fetch(`${CONFIG.API_BASE_URL}/layanan`).then(r => r.json()),
-      fetch(`${CONFIG.API_BASE_URL}/jadwal`).then(r => r.json())
+      fetch(`${CONFIG.API_BASE_URL}/jadwal`).then(r => r.json()),
+      fetch(`${CONFIG.API_BASE_URL}/kategori-kendaraan`).then(r => r.json())
     ])
-    .then(([layananData, jadwalData]) => {
+    .then(([layananData, jadwalData, kategoriData]) => {
       if (Array.isArray(layananData)) setLayanan(layananData.filter(l => l.is_aktif));
       if (Array.isArray(jadwalData)) setJadwal(jadwalData);
+      if (Array.isArray(kategoriData)) setKategoriList(kategoriData);
       setIsLoaded(true);
     })
     .catch(() => {
@@ -141,7 +145,7 @@ export default function MainPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setMsg({ type: 'success', text: `Nomor antrian ${data.antrian.nomor_antrian} berhasil diambil!` });
-        setSelectedLayanan([]); setKendaraan(''); setCatatan('');
+        setSelectedLayanan([]); setKendaraan(''); setCatatan(''); setSelectedKategori(null);
         fetchAntrianAktif(); fetchRiwayat(); setActiveTab('status');
         return true;
       } else {
@@ -977,34 +981,62 @@ export default function MainPage() {
                     </div>
                   )}
                   <div style={{ marginBottom: 16 }}>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 6 }}>Pilih Layanan (Bisa Lebih Dari Satu)</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 12, maxHeight: 180, overflowY: 'auto' }}>
-                      {layanan.map(l => (
-                        <label key={l.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', background: selectedLayanan.includes(l.id.toString()) ? '#fff7ed' : '#f8fafc', padding: 10, borderRadius: 8, border: `1px solid ${selectedLayanan.includes(l.id.toString()) ? '#fdba74' : '#e2e8f0'}`, transition: 'all 0.2s' }}>
-                          <input 
-                            type="checkbox" 
-                            value={l.id} 
-                            checked={selectedLayanan.includes(l.id.toString())}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedLayanan([...selectedLayanan, e.target.value]);
-                              } else {
-                                setSelectedLayanan(selectedLayanan.filter(id => id !== e.target.value));
-                              }
-                            }}
-                            style={{ marginTop: 3, transform: 'scale(1.1)', accentColor: '#f97316' }}
-                          />
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem' }}>{l.nama_layanan}</div>
-                              <div style={{ fontWeight: 800, color: '#f97316', fontSize: '0.9rem' }}>Rp {l.harga ? l.harga.toLocaleString('id-ID') : '0'}</div>
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 1 }}><i className="fas fa-clock"></i> ±{l.estimasi_menit} menit</div>
-                          </div>
-                        </label>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 6 }}>Kategori Kendaraan</label>
+                    <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
+                      {kategoriList.map(k => (
+                        <div 
+                          key={k.id} 
+                          onClick={() => { setSelectedKategori(k.id); setSelectedLayanan([]); }}
+                          style={{ 
+                            flexShrink: 0, width: 100, height: 100, 
+                            border: `2px solid ${selectedKategori === k.id ? '#f97316' : '#e2e8f0'}`, 
+                            borderRadius: 16, display: 'flex', flexDirection: 'column', 
+                            alignItems: 'center', justifyContent: 'center', cursor: 'pointer', 
+                            background: selectedKategori === k.id ? '#fff7ed' : '#fff',
+                            transition: 'all 0.2s',
+                            boxShadow: selectedKategori === k.id ? '0 4px 12px rgba(249,115,22,0.2)' : 'none'
+                          }}
+                        >
+                          <i className={`fas fa-${k.icon || 'car'}`} style={{ fontSize: '2rem', color: selectedKategori === k.id ? '#f97316' : '#94a3b8', marginBottom: 8 }}></i>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: selectedKategori === k.id ? '#f97316' : '#64748b' }}>{k.nama_kategori}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
+
+                  {selectedKategori && (
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 6 }}>Pilih Layanan (Bisa Lebih Dari Satu)</label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: 12, maxHeight: 180, overflowY: 'auto' }}>
+                        {layanan.filter(l => l.kategori_id === selectedKategori).length === 0 ? (
+                           <div style={{ textAlign: 'center', padding: '20px', color: '#94a3b8', fontSize: '0.85rem' }}>Tidak ada layanan untuk kategori ini.</div>
+                        ) : layanan.filter(l => l.kategori_id === selectedKategori).map(l => (
+                          <label key={l.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', background: selectedLayanan.includes(l.id.toString()) ? '#fff7ed' : '#f8fafc', padding: 10, borderRadius: 8, border: `1px solid ${selectedLayanan.includes(l.id.toString()) ? '#fdba74' : '#e2e8f0'}`, transition: 'all 0.2s' }}>
+                            <input 
+                              type="checkbox" 
+                              value={l.id} 
+                              checked={selectedLayanan.includes(l.id.toString())}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedLayanan([...selectedLayanan, e.target.value]);
+                                } else {
+                                  setSelectedLayanan(selectedLayanan.filter(id => id !== e.target.value));
+                                }
+                              }}
+                              style={{ marginTop: 3, transform: 'scale(1.1)', accentColor: '#f97316' }}
+                            />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem' }}>{l.nama_layanan}</div>
+                                <div style={{ fontWeight: 800, color: '#f97316', fontSize: '0.9rem' }}>Rp {l.harga ? l.harga.toLocaleString('id-ID') : '0'}</div>
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 1 }}><i className="fas fa-clock"></i> ±{l.estimasi_menit} menit</div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div style={{ marginBottom: 16 }}>
                     <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 6 }}>Merk & Tipe Kendaraan</label>
                     <input type="text" value={kendaraan} onChange={e => setKendaraan(e.target.value)} required placeholder="Contoh: Honda Vario 150 / Toyota Avanza" style={{ width: '100%', padding: '12px 14px', border: '1.5px solid #e2e8f0', borderRadius: 12, fontFamily: 'inherit', fontSize: '0.9rem', outline: 'none', background: '#fff' }} />

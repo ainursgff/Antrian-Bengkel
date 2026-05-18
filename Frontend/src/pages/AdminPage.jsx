@@ -45,7 +45,11 @@ export default function AdminPage() {
   const [limitPengguna, setLimitPengguna] = useState(10);
 
   const [showLayananModal, setShowLayananModal] = useState(false);
-  const [layananForm, setLayananForm] = useState({ id: null, nama_layanan: '', deskripsi: '', estimasi_menit: 30, harga: 0, is_aktif: 1 });
+  const [kategoriList, setKategoriList] = useState([]);
+  const [layananForm, setLayananForm] = useState({ id: null, kategori_id: '', nama_layanan: '', deskripsi: '', estimasi_menit: 30, harga: 0, is_aktif: 1 });
+
+  const [showKategoriModal, setShowKategoriModal] = useState(false);
+  const [kategoriForm, setKategoriForm] = useState({ id: null, nama_kategori: '', deskripsi: '', icon: 'directions_car' });
 
   const [showJadwalModal, setShowJadwalModal] = useState(false);
   const [jadwalForm, setJadwalForm] = useState({ id: null, hari: 1, jam_buka: '08:00', jam_tutup: '17:00', kuota_per_slot: 5, is_libur: 0 });
@@ -71,7 +75,14 @@ export default function AdminPage() {
     return () => { clearInterval(iv); clearInterval(clockIv); document.head.removeChild(link); };
   }, []);
 
-  const fetchAll = () => { fetchAntrian(); fetchLayanan(); fetchJadwal(); fetchLaporan(); fetchPengguna(); };
+  const fetchAll = () => { fetchAntrian(); fetchLayanan(); fetchJadwal(); fetchLaporan(); fetchPengguna(); fetchKategori(); };
+  const fetchKategori = async () => {
+    try {
+      const r = await fetch(`${CONFIG.API_BASE_URL}/kategori-kendaraan`);
+      const d = await r.json();
+      setKategoriList(Array.isArray(d) ? d : []);
+    } catch {}
+  };
   const fetchPengguna = async () => {
     try {
       const r = await fetch(`${CONFIG.API_BASE_URL}/auth/users`, { headers: authH });
@@ -214,6 +225,50 @@ export default function AdminPage() {
     fetchLayanan();
   };
 
+  const saveKategori = async (e) => {
+    e.preventDefault();
+    const method = kategoriForm.id ? 'PUT' : 'POST';
+    const url = kategoriForm.id ? `${CONFIG.API_BASE_URL}/kategori-kendaraan/${kategoriForm.id}` : `${CONFIG.API_BASE_URL}/kategori-kendaraan`;
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: authH,
+        body: JSON.stringify(kategoriForm)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(kategoriForm.id ? 'Kategori berhasil diperbarui!' : 'Kategori berhasil ditambahkan!');
+        setShowKategoriModal(false);
+        fetchKategori();
+        fetchLayanan();
+      } else {
+        alert(data.error || 'Gagal menyimpan kategori');
+      }
+    } catch {
+      alert('Gagal menghubungi server');
+    }
+  };
+
+  const deleteKategori = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus kategori kendaraan ini?\nJika masih ada layanan yang terhubung, penghapusan akan ditolak demi keamanan.')) return;
+    try {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/kategori-kendaraan/${id}`, {
+        method: 'DELETE',
+        headers: authH
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert('Kategori berhasil dihapus!');
+        fetchKategori();
+        fetchLayanan();
+      } else {
+        alert(data.error || 'Gagal menghapus kategori');
+      }
+    } catch {
+      alert('Gagal menghubungi server');
+    }
+  };
+
   const saveJadwal = async (e) => {
     e.preventDefault();
     const method = jadwalForm.id ? 'PUT' : 'POST';
@@ -244,13 +299,14 @@ export default function AdminPage() {
   const TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-line' },
     { id: 'antrian', label: 'Kelola Antrian', icon: 'fa-list-ol' },
+    { id: 'kategori', label: 'Kategori Kendaraan', icon: 'fa-car' },
     { id: 'layanan', label: 'Kelola Layanan', icon: 'fa-wrench' },
     { id: 'jadwal', label: 'Jadwal Operasional', icon: 'fa-calendar-alt' },
     { id: 'laporan', label: 'Laporan', icon: 'fa-chart-bar' },
     { id: 'pengguna', label: 'Kelola Pengguna', icon: 'fa-users' },
   ];
 
-  const TAB_LABELS = { dashboard:'Dashboard', antrian:'Kelola Antrian', layanan:'Kelola Layanan', jadwal:'Jadwal Operasional', laporan:'Laporan Antrian', pengguna:'Kelola Pengguna' };
+  const TAB_LABELS = { dashboard:'Dashboard', antrian:'Kelola Antrian', kategori:'Kategori Kendaraan', layanan:'Kelola Layanan', jadwal:'Jadwal Operasional', laporan:'Laporan Antrian', pengguna:'Kelola Pengguna' };
 
   return (
     <div className="panel-layout">
@@ -629,6 +685,114 @@ export default function AdminPage() {
             );
           })()}
 
+          {/* ===== KELOLA KATEGORI KENDARAAN ===== */}
+          {tab === 'kategori' && (() => {
+            return (
+              <div className="fade-in">
+                <div className="table-card">
+                  <div className="table-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <h6>Kelola Kategori Kendaraan</h6>
+                      <span style={{background:'#f1f5f9',color:'#64748b',padding:'4px 14px',borderRadius:50,fontSize:'0.82rem',fontWeight:700}}>Total: {kategoriList.length}</span>
+                    </div>
+                    <button className="btn-add" style={{ margin: 0 }} onClick={() => { setKategoriForm({id:null,nama_kategori:'',deskripsi:'',icon:'directions_car',is_active:1}); setShowKategoriModal(true); }}>
+                      <i className="fas fa-plus"></i> Tambah Kategori
+                    </button>
+                  </div>
+                  <div className="table-responsive">
+                    <table className="table table-hover align-middle mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th className="px-4" style={{width: 80}}>No.</th>
+                          <th style={{width: 100}} className="text-center">Icon</th>
+                          <th>Nama Kategori</th>
+                          <th>Deskripsi</th>
+                          <th className="text-center">Status</th>
+                          <th className="text-center px-4" style={{width: 180}}>Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {kategoriList.map((k, index) => (
+                          <tr key={k.id}>
+                            <td className="px-4 fw-bold text-muted">{index + 1}</td>
+                            <td className="text-center">
+                              <div style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 12,
+                                background: '#fff7ed',
+                                border: '1.5px solid #fdba74',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#f97316'
+                              }}>
+                                <i className={`fas fa-${k.icon || 'car'}`} style={{ fontSize: '1.2rem' }}></i>
+                              </div>
+                            </td>
+                            <td className="fw-bold" style={{color:'#1e293b', fontSize: '0.95rem'}}>{k.nama_kategori}</td>
+                            <td className="text-muted" style={{maxWidth:300,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{k.deskripsi || '-'}</td>
+                            <td className="text-center">
+                              <span 
+                                style={{
+                                  background: k.is_active ? '#f0fdf4' : '#fef2f2',
+                                  color: k.is_active ? '#16a34a' : '#dc2626',
+                                  padding: '4px 12px',
+                                  borderRadius: 50,
+                                  fontSize: '0.82rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                                onClick={async () => {
+                                  const updatedActive = k.is_active ? 0 : 1;
+                                  try {
+                                    const res = await fetch(`${CONFIG.API_BASE_URL}/kategori-kendaraan/${k.id}`, {
+                                      method: 'PUT',
+                                      headers: authH,
+                                      body: JSON.stringify({
+                                        nama_kategori: k.nama_kategori,
+                                        deskripsi: k.deskripsi,
+                                        icon: k.icon,
+                                        is_active: updatedActive
+                                      })
+                                    });
+                                    if (res.ok) {
+                                      fetchKategori();
+                                    }
+                                  } catch {}
+                                }}
+                              >
+                                {k.is_active ? 'Aktif' : 'Nonaktif'}
+                              </span>
+                            </td>
+                            <td className="text-center px-4">
+                              <div className="action-group justify-content-center" style={{ gap: 8 }}>
+                                <button className="btn-action edit" title="Edit Kategori" onClick={() => {
+                                  setKategoriForm({
+                                    id: k.id,
+                                    nama_kategori: k.nama_kategori,
+                                    deskripsi: k.deskripsi || '',
+                                    icon: k.icon || 'directions_car',
+                                    is_active: k.is_active !== undefined ? k.is_active : 1
+                                  });
+                                  setShowKategoriModal(true);
+                                }}><i className="fas fa-edit"></i></button>
+                                <button className="btn-action delete" title="Hapus Kategori" onClick={() => deleteKategori(k.id)}><i className="fas fa-trash"></i></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {kategoriList.length === 0 && (
+                          <tr><td colSpan="6" className="text-center py-5 text-muted">Belum ada kategori kendaraan</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* ===== KELOLA LAYANAN ===== */}
           {tab === 'layanan' && (() => {
             const filteredLayanan = layanan.filter(l => {
@@ -713,31 +877,32 @@ export default function AdminPage() {
                         <option value="nonaktif">Nonaktif</option>
                       </select>
 
-                      <button className="btn-add" style={{ margin: 0 }} onClick={() => { setLayananForm({id:null,nama_layanan:'',deskripsi:'',estimasi_menit:30,harga:0,is_aktif:1}); setShowLayananModal(true); }}>
+                      <button className="btn-add" style={{ margin: 0 }} onClick={() => { setLayananForm({id:null,kategori_id:'',nama_layanan:'',deskripsi:'',estimasi_menit:30,harga:0,is_aktif:1}); setShowLayananModal(true); }}>
                         <i className="fas fa-plus"></i> Tambah Layanan
                       </button>
                     </div>
                   </div>
                   <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
-                      <thead className="table-light"><tr><th className="px-4">Nama Layanan</th><th>Deskripsi</th><th>Estimasi</th><th>Biaya / Harga</th><th className="text-center">Status</th><th className="text-center px-4">Aksi</th></tr></thead>
+                      <thead className="table-light"><tr><th className="px-4">Nama Layanan</th><th>Kategori</th><th>Deskripsi</th><th>Estimasi</th><th>Biaya / Harga</th><th className="text-center">Status</th><th className="text-center px-4">Aksi</th></tr></thead>
                       <tbody>
                         {paginatedLayanan.map(l => (
                           <tr key={l.id}>
                             <td className="px-4 fw-bold">{l.nama_layanan}</td>
+                            <td className="fw-semibold text-primary">{l.kategori?.nama_kategori || l.nama_kategori || '-'}</td>
                             <td className="text-muted" style={{maxWidth:220,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{l.deskripsi || '-'}</td>
                             <td><span style={{background:'#f0fdf4',color:'#16a34a',padding:'4px 12px',borderRadius:50,fontSize:'0.82rem',fontWeight:700}}>±{l.estimasi_menit} mnt</span></td>
                             <td className="fw-bold" style={{color:'#1e293b'}}>Rp {l.harga ? l.harga.toLocaleString('id-ID') : '0'}</td>
                             <td className="text-center"><span style={{background:l.is_aktif?'#f0fdf4':'#fef2f2',color:l.is_aktif?'#16a34a':'#dc2626',padding:'4px 12px',borderRadius:50,fontSize:'0.82rem',fontWeight:700}}>{l.is_aktif?'Aktif':'Nonaktif'}</span></td>
                             <td className="text-center px-4">
                               <div className="action-group justify-content-center">
-                                <button className="btn-action edit" title="Edit" onClick={() => { setLayananForm({id:l.id,nama_layanan:l.nama_layanan,deskripsi:l.deskripsi||'',estimasi_menit:l.estimasi_menit,harga:l.harga||0,is_aktif:l.is_aktif}); setShowLayananModal(true); }}><i className="fas fa-edit"></i></button>
+                                <button className="btn-action edit" title="Edit" onClick={() => { setLayananForm({id:l.id,kategori_id:l.kategori_id||'',nama_layanan:l.nama_layanan,deskripsi:l.deskripsi||'',estimasi_menit:l.estimasi_menit,harga:l.harga||0,is_aktif:l.is_aktif}); setShowLayananModal(true); }}><i className="fas fa-edit"></i></button>
                                 <button className="btn-action delete" title="Hapus" onClick={() => deleteLayanan(l.id)}><i className="fas fa-trash"></i></button>
                               </div>
                             </td>
                           </tr>
                         ))}
-                        {paginatedLayanan.length === 0 && <tr><td colSpan="6" className="text-center py-5 text-muted">Tidak ada layanan yang cocok</td></tr>}
+                        {paginatedLayanan.length === 0 && <tr><td colSpan="7" className="text-center py-5 text-muted">Tidak ada layanan yang cocok</td></tr>}
                       </tbody>
                     </table>
                   </div>
@@ -1074,12 +1239,59 @@ export default function AdminPage() {
             <div className="modal-body-box">
               <form onSubmit={saveLayanan}>
                 <div className="form-group-custom"><label>Nama Layanan</label><input className="form-control-custom" value={layananForm.nama_layanan} onChange={e=>setLayananForm({...layananForm,nama_layanan:e.target.value})} required placeholder="Contoh: Ganti Oli"/></div>
+                <div className="form-group-custom">
+                  <label>Kategori Kendaraan</label>
+                  <select className="form-control-custom" value={layananForm.kategori_id} onChange={e=>setLayananForm({...layananForm,kategori_id:e.target.value})} required>
+                    <option value="">-- Pilih Kategori --</option>
+                    {kategoriList.map(k => (
+                      <option key={k.id} value={k.id}>{k.nama_kategori}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="form-group-custom"><label>Deskripsi</label><textarea className="form-control-custom" value={layananForm.deskripsi} onChange={e=>setLayananForm({...layananForm,deskripsi:e.target.value})} rows={3} placeholder="Deskripsi layanan..." style={{resize:'none'}}></textarea></div>
                 <div className="form-group-custom"><label>Estimasi (menit)</label><input type="number" className="form-control-custom" value={layananForm.estimasi_menit} onChange={e=>setLayananForm({...layananForm,estimasi_menit:parseInt(e.target.value) || 30})} min={5} required/></div>
                 <div className="form-group-custom"><label>Biaya / Harga (Rupiah)</label><input type="number" className="form-control-custom" value={layananForm.harga} onChange={e=>setLayananForm({...layananForm,harga:parseInt(e.target.value) || 0})} min={0} required placeholder="Contoh: 50000"/></div>
                 <div className="form-group-custom"><label>Status</label>
                   <select className="form-control-custom" value={layananForm.is_aktif} onChange={e=>setLayananForm({...layananForm,is_aktif:parseInt(e.target.value)})}>
                     <option value={1}>Aktif</option><option value={0}>Nonaktif</option>
+                  </select>
+                </div>
+                <button type="submit" className="btn-submit-form"><i className="fas fa-save"></i> Simpan</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KATEGORI */}
+      {showKategoriModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowKategoriModal(false)}>
+          <div className="modal-box">
+            <div className="modal-head">
+              <h5><i className="fas fa-car" style={{color:'#f97316',marginRight:8}}></i>{kategoriForm.id ? 'Edit Kategori' : 'Tambah Kategori'}</h5>
+              <button className="btn-close-modal" onClick={() => setShowKategoriModal(false)}><i className="fas fa-times"></i></button>
+            </div>
+            <div className="modal-body-box">
+              <form onSubmit={saveKategori}>
+                <div className="form-group-custom"><label>Nama Kategori</label><input className="form-control-custom" value={kategoriForm.nama_kategori} onChange={e=>setKategoriForm({...kategoriForm,nama_kategori:e.target.value})} required placeholder="Contoh: Motor"/></div>
+                <div className="form-group-custom"><label>Deskripsi</label><textarea className="form-control-custom" value={kategoriForm.deskripsi} onChange={e=>setKategoriForm({...kategoriForm,deskripsi:e.target.value})} rows={3} placeholder="Deskripsi kategori..." style={{resize:'none'}}></textarea></div>
+                <div className="form-group-custom">
+                  <label>Icon Kendaraan</label>
+                  <select className="form-control-custom" value={kategoriForm.icon} onChange={e=>setKategoriForm({...kategoriForm,icon:e.target.value})} required>
+                    <option value="directions_car">Mobil (directions_car)</option>
+                    <option value="two_wheeler">Motor (two_wheeler)</option>
+                    <option value="directions_bus">Bus (directions_bus)</option>
+                    <option value="local_shipping">Truk (local_shipping)</option>
+                    <option value="airport_shuttle">Pickup (airport_shuttle)</option>
+                    <option value="drive_eta">SUV (drive_eta)</option>
+                    <option value="motorcycle">Motor Klasik (motorcycle)</option>
+                    <option value="bicycle">Sepeda (bicycle)</option>
+                  </select>
+                </div>
+                <div className="form-group-custom"><label>Status Kategori</label>
+                  <select className="form-control-custom" value={kategoriForm.is_active} onChange={e=>setKategoriForm({...kategoriForm,is_active:parseInt(e.target.value)})}>
+                    <option value={1}>Aktif</option>
+                    <option value={0}>Nonaktif</option>
                   </select>
                 </div>
                 <button type="submit" className="btn-submit-form"><i className="fas fa-save"></i> Simpan</button>

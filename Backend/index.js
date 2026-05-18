@@ -20,6 +20,7 @@ const layananRouter = require('./routes/layanan');
 const jadwalRouter = require('./routes/jadwal');
 const notifikasiRouter = require('./routes/notifikasi');
 const laporanRouter = require('./routes/laporan');
+const kategoriKendaraanRouter = require('./routes/kategoriKendaraan');
 
 app.use('/api/auth', authRouter);
 app.use('/api/antrian', antrianRouter);
@@ -27,6 +28,7 @@ app.use('/api/layanan', layananRouter);
 app.use('/api/jadwal', jadwalRouter);
 app.use('/api/notifikasi', notifikasiRouter);
 app.use('/api/laporan', laporanRouter);
+app.use('/api/kategori-kendaraan', kategoriKendaraanRouter);
 
 // Health check
 app.get('/', (req, res) => {
@@ -39,6 +41,25 @@ async function runDatabaseMigrations() {
   console.log('--- Memeriksa & Menginisialisasi Skema Database Otomatis ---');
 
   try {
+    // 0. TABEL KATEGORI KENDARAAN
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS kategori_kendaraan (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        nama_kategori VARCHAR(100) NOT NULL,
+        deskripsi TEXT,
+        icon VARCHAR(100) DEFAULT 'directions_car',
+        is_active TINYINT(1) DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Tambahkan kolom 'is_active' ke kategori_kendaraan jika belum ada
+    try {
+      await pool.query("ALTER TABLE kategori_kendaraan ADD COLUMN is_active TINYINT(1) DEFAULT 1 AFTER icon");
+      console.log("Database updated: 'is_active' column added to table 'kategori_kendaraan'.");
+    } catch (e) { /* Ignore */ }
+
     // 1. TABEL USERS
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -58,25 +79,29 @@ async function runDatabaseMigrations() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS layanan (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        kategori_id INT UNSIGNED DEFAULT NULL,
         nama_layanan VARCHAR(100) NOT NULL,
         deskripsi TEXT,
         estimasi_menit INT UNSIGNED DEFAULT 30,
         harga INT UNSIGNED DEFAULT 0,
         is_aktif TINYINT(1) DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (kategori_id) REFERENCES kategori_kendaraan(id) ON DELETE SET NULL
       );
     `);
 
-    // Tambahkan kolom 'harga' jika belum ada (Backward Compatibility)
+    // Tambahkan kolom 'harga' dan 'kategori_id' jika belum ada (Backward Compatibility)
     try {
       await pool.query("ALTER TABLE layanan ADD COLUMN harga INT UNSIGNED DEFAULT 0 AFTER estimasi_menit");
       console.log("Database updated: 'harga' column added to table 'layanan'.");
-    } catch (alterError) {
-      if (alterError.code !== 'ER_DUP_FIELDNAME' && alterError.errno !== 1060) {
-        throw alterError;
-      }
-    }
+    } catch (e) { /* Ignore */ }
+
+    try {
+      await pool.query("ALTER TABLE layanan ADD COLUMN kategori_id INT UNSIGNED DEFAULT NULL AFTER id");
+      await pool.query("ALTER TABLE layanan ADD FOREIGN KEY (kategori_id) REFERENCES kategori_kendaraan(id) ON DELETE SET NULL");
+      console.log("Database updated: 'kategori_id' column added to table 'layanan'.");
+    } catch (e) { /* Ignore */ }
 
     // 3. TABEL JADWAL OPERASIONAL
     await pool.query(`
@@ -146,38 +171,103 @@ async function runDatabaseMigrations() {
       console.log('Seeded default admin user (admin@bengkel.com / admin123).');
     }
 
-    // --- SEED DEFAULT LAYANAN ---
-    const [layananRows] = await pool.query("SELECT COUNT(*) as count FROM layanan");
-    if (layananRows[0].count === 0) {
+    // --- SEED DEFAULT KATEGORI KENDARAAN & LAYANAN ---
+    const [kategoriRows] = await pool.query("SELECT COUNT(*) as count FROM kategori_kendaraan");
+    const [hasSUV] = await pool.query("SELECT COUNT(*) as count FROM kategori_kendaraan WHERE nama_kategori = 'SUV'");
+    
+    if (kategoriRows[0].count !== 7 || hasSUV[0].count === 0) {
+      console.log('--- Wiping and Seeding Database with 7 Categories and Real Services ---');
+      
+      // Disable constraints and wipe tables
+      await pool.query("SET FOREIGN_KEY_CHECKS = 0");
+      await pool.query("TRUNCATE TABLE antrian_layanan");
+      await pool.query("TRUNCATE TABLE antrian");
+      await pool.query("TRUNCATE TABLE notifikasi");
+      await pool.query("TRUNCATE TABLE layanan");
+      await pool.query("TRUNCATE TABLE kategori_kendaraan");
+      await pool.query("SET FOREIGN_KEY_CHECKS = 1");
+      
+      // 1. Seed Categories
       await pool.query(`
-        INSERT INTO layanan (nama_layanan, deskripsi, estimasi_menit, harga, is_aktif) VALUES
-        ('Ganti Oli', 'Penggantian oli mesin kendaraan roda dua dan roda empat', 30, 65000, 1),
-        ('Tune Up', 'Perawatan mesin berkala meliputi busi, filter udara, dan karburator', 60, 120000, 1),
-        ('Ganti Ban', 'Penggantian ban luar dan dalam kendaraan', 45, 75000, 1),
-        ('Servis Rem', 'Pemeriksaan dan penggantian kampas rem depan/belakang', 45, 50000, 1),
-        ('Periksa AC', 'Pemeriksaan sistem pendingin udara kendaraan roda empat', 90, 150000, 1)
+        INSERT INTO kategori_kendaraan (nama_kategori, deskripsi, icon) VALUES
+        ('Mobil', 'Kendaraan roda empat atau lebih', 'directions_car'),
+        ('Motor', 'Kendaraan roda dua', 'two_wheeler'),
+        ('Bus', 'Bus besar komersial', 'directions_bus'),
+        ('Truk', 'Truk muatan besar', 'local_shipping'),
+        ('Pickup', 'Mobil bak terbuka/pickup', 'airport_shuttle'),
+        ('SUV', 'Sport Utility Vehicle', 'drive_eta'),
+        ('Minibus', 'Mobil berukuran minibus', 'directions_bus')
       `);
-      console.log('Seeded default layanan.');
+      console.log('Seeded 7 categories successfully.');
+      
+      // 2. Fetch seeded categories to get their IDs
+      const [kategoris] = await pool.query("SELECT id, nama_kategori FROM kategori_kendaraan");
+      const findId = (nama) => kategoris.find(k => k.nama_kategori === nama)?.id || null;
+      
+      const mobilId = findId('Mobil');
+      const motorId = findId('Motor');
+      const busId = findId('Bus');
+      const trukId = findId('Truk');
+      const pickupId = findId('Pickup');
+      const suvId = findId('SUV');
+      const minibusId = findId('Minibus');
+      
+      // 3. Seed Real Services exactly as requested
+      const layananData = [
+        // Motor
+        [motorId, 'Servis Ringan Motor', 'Perawatan rutin berkala mesin motor', 30, 50000, 1],
+        [motorId, 'Ganti Oli Motor', 'Penggantian oli mesin dan transmisi motor', 15, 65000, 1],
+        [motorId, 'Tune Up Motor', 'Pembersihan karburator/injeksi dan penyetelan', 45, 80000, 1],
+        [motorId, 'Servis CVT', 'Servis dan pembersihan area CVT matic', 45, 85000, 1],
+        [motorId, 'Ganti Kampas Rem', 'Penggantian kampas rem depan atau belakang', 20, 45000, 1],
+        [motorId, 'Cek Kelistrikan', 'Pemeriksaan sistem kelistrikan & aki motor', 30, 40000, 1],
+        
+        // Mobil
+        [mobilId, 'Ganti Oli Mobil', 'Penggantian oli mesin mobil premium', 30, 250000, 1],
+        [mobilId, 'Spooring', 'Penyelarasan sudut roda mobil', 45, 150000, 1],
+        [mobilId, 'Balancing', 'Penyeimbangan berat roda mobil', 30, 100000, 1],
+        [mobilId, 'Tune Up Mobil', 'Perawatan berkala sistem pembakaran mobil', 60, 300000, 1],
+        [mobilId, 'Servis AC', 'Pembersihan filter dan pengisian freon AC', 60, 200000, 1],
+        [mobilId, 'Cuci Mesin', 'Detailing dan pembersihan ruang mesin mobil', 45, 75000, 1],
+        
+        // Bus
+        [busId, 'Tune Up Bus', 'Penyetelan sistem pembakaran bus', 90, 500000, 1],
+        [busId, 'Servis Rem Bus', 'Perawatan intensif rem pneumatic/angin bus', 60, 350000, 1],
+        [busId, 'Ganti Oli Bus', 'Penggantian oli mesin kapasitas besar bus', 45, 600000, 1],
+        [busId, 'Pemeriksaan Mesin Bus', 'Diagnostik menyeluruh performa mesin bus', 120, 750000, 1],
+        [busId, 'Servis Suspensi', 'Pemeriksaan suspensi udara & shockbreaker bus', 90, 450000, 1],
+        
+        // Truk
+        [trukId, 'Servis Mesin Truk', 'Penyetelan mesin truk muatan besar', 90, 450000, 1],
+        [trukId, 'Ganti Oli Truk', 'Penggantian oli mesin diesel truk', 45, 550000, 1],
+        [trukId, 'Pemeriksaan Rem Angin', 'Pemeriksaan kebocoran & performa rem angin truk', 60, 300000, 1],
+        [trukId, 'Servis Gardan', 'Penggantian oli & penyetelan roda gigi gardan truk', 60, 350000, 1],
+        [trukId, 'Pemeriksaan Kelistrikan', 'Pemeriksaan lampu utama, sein & accu truk', 60, 250000, 1],
+        
+        // Pickup
+        [pickupId, 'Servis Pickup', 'Servis mesin berkala mobil bak/pickup', 45, 180000, 1],
+        [pickupId, 'Ganti Oli Pickup', 'Penggantian oli mesin mobil pickup', 30, 200000, 1],
+        [pickupId, 'Pemeriksaan Mesin Pickup', 'Pemeriksaan menyeluruh performa mesin pickup', 60, 250000, 1],
+        
+        // SUV
+        [suvId, 'Tune Up SUV', 'Penyetelan mesin SUV premium', 60, 320000, 1],
+        [suvId, 'Balancing SUV', 'Penyeimbangan roda mobil SUV', 30, 120000, 1],
+        [suvId, 'Servis AC SUV', 'Servis kompresor & isi freon AC SUV', 60, 220000, 1],
+        
+        // Minibus
+        [minibusId, 'Servis Minibus', 'Servis rutin berkala minibus', 60, 200000, 1],
+        [minibusId, 'Pemeriksaan Mesin Minibus', 'Pemeriksaan performa mesin minibus', 90, 280000, 1],
+        [minibusId, 'Ganti Oli Minibus', 'Penggantian oli mesin & filter minibus', 30, 220000, 1]
+      ];
+      
+      for (const row of layananData) {
+        await pool.query(
+          "INSERT INTO layanan (kategori_id, nama_layanan, deskripsi, estimasi_menit, harga, is_aktif) VALUES (?, ?, ?, ?, ?, ?)",
+          row
+        );
+      }
+      console.log('Seeded all services successfully.');
     }
-
-    // Isikan harga realisitis untuk layanan jika ada yang berharga 0
-    await pool.query("UPDATE layanan SET harga = 65000 WHERE nama_layanan = 'Ganti Oli' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 120000 WHERE nama_layanan = 'Tune Up' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 75000 WHERE nama_layanan = 'Ganti Ban' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 40000 WHERE nama_layanan = 'Cuci Kendaraan' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 35000 WHERE nama_layanan = 'Cek Rem' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 150000 WHERE nama_layanan = 'Paket Ringan (Servis + Oli)' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 250000 WHERE nama_layanan = 'Paket Lengkap (Mesin, Rem, Oli)' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 300000 WHERE nama_layanan = 'Paket Spesial (Kelistrikan + Mesin)' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 60000 WHERE nama_layanan = 'Ganti Ban Luar / Dalam' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 25000 WHERE nama_layanan = 'Tambal Ban Tubeless' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 45000 WHERE nama_layanan = 'Ganti Kanvas Rem' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 85000 WHERE nama_layanan = 'Servis CVT / Rantai' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 350000 WHERE nama_layanan = 'Turun Mesin Ringan' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 85000 WHERE nama_layanan = 'Ganti Aki & Cek Kelistrikan' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 120000 WHERE nama_layanan = 'Press Segitiga / Velg' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = 25000 WHERE nama_layanan = 'Cuci Motor Salju' AND (harga = 0 OR harga IS NULL)");
-    await pool.query("UPDATE layanan SET harga = GREATEST(estimasi_menit * 2000, 15000) WHERE harga = 0 OR harga IS NULL");
 
     // --- SEED DEFAULT JADWAL ---
     const [jadwalRows] = await pool.query("SELECT COUNT(*) as count FROM jadwal_operasional");
