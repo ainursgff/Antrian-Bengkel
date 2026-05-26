@@ -3,6 +3,7 @@ import '../models/antrian_model.dart';
 import '../models/layanan_model.dart';
 import '../models/notifikasi_model.dart';
 import '../models/kategori_kendaraan_model.dart';
+import '../models/jadwal_model.dart';
 import '../services/antrian_service.dart';
 
 class AntrianProvider with ChangeNotifier {
@@ -13,6 +14,7 @@ class AntrianProvider with ChangeNotifier {
   List<AntrianModel> _riwayat = [];
   List<LayananModel> _layanan = [];
   List<KategoriKendaraanModel> _kategoriList = [];
+  List<JadwalModel> _jadwal = [];
   List<NotifikasiModel> _notifikasi = [];
   bool _isLoading = false;
   bool _isSubmitting = false;
@@ -23,6 +25,7 @@ class AntrianProvider with ChangeNotifier {
   List<AntrianModel> get riwayat => _riwayat;
   List<LayananModel> get layanan => _layanan;
   List<KategoriKendaraanModel> get kategoriList => _kategoriList;
+  List<JadwalModel> get jadwal => _jadwal;
   List<NotifikasiModel> get notifikasi => _notifikasi;
   bool get isLoading => _isLoading;
   bool get isSubmitting => _isSubmitting;
@@ -41,11 +44,13 @@ class AntrianProvider with ChangeNotifier {
         _service.fetchLayanan(),
         _service.fetchNotifikasi(),
         _service.fetchKategoriKendaraan(),
+        _service.fetchJadwal(),
       ]);
       _antrianAktif = results[0] as AntrianModel?;
       _layanan = results[1] as List<LayananModel>;
       _notifikasi = results[2] as List<NotifikasiModel>;
       _kategoriList = results[3] as List<KategoriKendaraanModel>;
+      _jadwal = results[4] as List<JadwalModel>;
     } catch (e) {
       _errorMessage = 'Gagal memuat data. Coba tarik ke bawah untuk refresh.';
     } finally {
@@ -121,6 +126,40 @@ class AntrianProvider with ChangeNotifier {
 
     if (result['success'] == true) {
       _antrianAktif = null;
+      await loadRiwayat();
+    }
+
+    _isSubmitting = false;
+    notifyListeners();
+    return result;
+  }
+
+  // Verify finished service
+  Future<Map<String, dynamic>> verifyAntrian(int id) async {
+    _isSubmitting = true;
+    notifyListeners();
+
+    final result = await _service.verifikasiAntrian(id);
+
+    if (result['success'] == true) {
+      await refreshAntrianAktif();
+      await loadRiwayat();
+    }
+
+    _isSubmitting = false;
+    notifyListeners();
+    return result;
+  }
+
+  // Request service revision
+  Future<Map<String, dynamic>> requestRevision(int id, String catatanRevisi) async {
+    _isSubmitting = true;
+    notifyListeners();
+
+    final result = await _service.revisiAntrian(id, catatanRevisi);
+
+    if (result['success'] == true) {
+      await refreshAntrianAktif();
       await loadRiwayat();
     }
 

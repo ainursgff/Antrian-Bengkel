@@ -1,26 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CONFIG from '../config';
+import ConfirmModal from '../components/ConfirmModal';
+import { useToast } from '../context/ToastContext';
+import { useQuery } from '../context/QueryProvider';
 
 const STATUS_MAP = {
   menunggu: { label: 'Menunggu', cls: 'badge-menunggu', icon: 'fa-clock' },
   dipanggil: { label: 'Dipanggil', cls: 'badge-dipanggil', icon: 'fa-bell' },
-  sedang_dilayani: { label: 'Dilayani', cls: 'badge-sedang_dilayani', icon: 'fa-wrench' },
+  sedang_dilayani: { label: 'Sedang Diservis', cls: 'badge-sedang_dilayani', icon: 'fa-wrench' },
+  menunggu_sparepart: { label: 'Pending Sparepart', cls: 'badge-dibatalkan', icon: 'fa-spinner fa-spin' },
+  menunggu_verifikasi_pelanggan: { label: 'Menunggu Verifikasi', cls: 'badge-dipanggil', icon: 'fa-user-check' },
+  revisi_servis: { label: 'Revisi Servis', cls: 'badge-dibatalkan', icon: 'fa-redo' },
   selesai: { label: 'Selesai', cls: 'badge-selesai', icon: 'fa-check-circle' },
+  dibatalkan: { label: 'Dibatalkan', cls: 'badge-dibatalkan', icon: 'fa-times-circle' },
 };
 
 export default function MontirPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const { query, fetchWithRetry, invalidateQuery } = useQuery();
+
   const token = localStorage.getItem('antrian_token');
   const user = JSON.parse(localStorage.getItem('antrian_user') || '{}');
   const authH = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 
   const [antrian, setAntrian] = useState([]);
   const [layanan, setLayanan] = useState([]);
-  const [filter, setFilter] = useState('semua'); // 'semua', 'dipanggil', 'sedang_dilayani', 'selesai'
+  const [filter, setFilter] = useState('semua');
   const [waktu, setWaktu] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // Reusable confirmation modal state
+  const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Konfirmasi',
+    cancelText: 'Batal',
+    onConfirm: () => {},
+    type: 'warning'
+  });
+
+  const openConfirm = (title, message, onConfirm, type = 'warning') => {
+    setConfirmConfig({
+      isOpen: true,
+      title,
+      message,
+      confirmText: 'Konfirmasi',
+      cancelText: 'Batal',
+      onConfirm: () => {
+        onConfirm();
+        closeConfirm();
+      },
+      type
+    });
+  };
+
+  const closeConfirm = () => {
+    setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     if (!token || localStorage.getItem('antrian_role') !== 'montir') {
@@ -58,8 +98,11 @@ export default function MontirPage() {
 
   const fetchAntrian = async () => {
     try {
-      const r = await fetch(`${CONFIG.API_BASE_URL}/antrian`, { headers: authH });
-      const data = await r.json();
+      const data = await query('montir_antrian', async () => {
+        const r = await fetchWithRetry(`${CONFIG.API_BASE_URL}/antrian`, { headers: authH });
+        const json = await r.json();
+        return json.success ? json.data : [];
+      }, { forceRefetch: true });
       const myAntrian = (Array.isArray(data) ? data : []).filter(a => a.montir_id === user.id);
       setAntrian(myAntrian);
     } catch (e) {
@@ -69,8 +112,11 @@ export default function MontirPage() {
 
   const fetchLayanan = async () => {
     try {
-      const r = await fetch(`${CONFIG.API_BASE_URL}/layanan`);
-      const d = await r.json();
+      const d = await query('montir_layanan', async () => {
+        const r = await fetchWithRetry(`${CONFIG.API_BASE_URL}/layanan`);
+        const json = await r.json();
+        return json.success ? json.data : [];
+      });
       setLayanan(Array.isArray(d) ? d : []);
     } catch (e) {
       console.error(e);
@@ -78,22 +124,34 @@ export default function MontirPage() {
   };
 
   const handleAksi = async (id, aksi) => {
-    const actText = aksi === 'dilayani' ? 'Mulai kerjakan motor ini?' : 'Selesaikan servis motor ini?';
-    if (!window.confirm(actText)) return;
-    try {
-      const r = await fetch(`${CONFIG.API_BASE_URL}/antrian/${id}/${aksi}`, {
-        method: 'PUT',
-        headers: authH
-      });
-      const d = await r.json();
-      if (d.success) {
-        fetchAntrian();
-      } else {
-        alert(d.error || 'Gagal merubah status');
-      }
-    } catch {
-      alert('Koneksi terputus');
+    let actText = '';
+    let title = '';
+    if (aksi === 'dilayani') {
+      title = 'Mulai Servis';
+      actText = 'Mulai kerjakan kendaraan ini?';
+    } else if (aksi === 'selesai') {
+      title = 'Selesaikan Servis';
+      actText = 'Selesaikan servis kendaraan ini dan kirim ke pelanggan untuk verifikasi akhir?';
     }
+    
+    openConfirm(title, actText, async () => {
+      try {
+        const r = await fetchWithRetry(`${CONFIG.API_BASE_URL}/antrian/${id}/${aksi}`, {
+          method: 'PUT',
+          headers: authH
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('Status antrian berhasil diperbarui!', 'success');
+          invalidateQuery('montir_antrian');
+          fetchAntrian();
+        } else {
+          showToast(d.error || 'Gagal mengubah status', 'error');
+        }
+      } catch {
+        showToast('Koneksi terputus', 'error');
+      }
+    });
   };
 
   const logout = () => {
@@ -110,12 +168,16 @@ export default function MontirPage() {
   };
 
   const totalSemua = antrian.length;
-  const totalDipanggil = antrian.filter(a => a.status === 'dipanggil').length;
+  const totalDipanggil = antrian.filter(a => a.status === 'dipanggil' || a.status === 'revisi_servis').length;
   const totalDilayani = antrian.filter(a => a.status === 'sedang_dilayani').length;
-  const totalSelesai = antrian.filter(a => a.status === 'selesai').length;
+  const totalSelesai = antrian.filter(a => a.status === 'selesai' || a.status === 'menunggu_verifikasi_pelanggan').length;
 
   const itemsToRender = filter === 'semua' 
     ? antrian 
+    : filter === 'dipanggil'
+    ? antrian.filter(a => ['dipanggil', 'revisi_servis'].includes(a.status))
+    : filter === 'selesai'
+    ? antrian.filter(a => ['selesai', 'menunggu_verifikasi_pelanggan'].includes(a.status))
     : antrian.filter(a => a.status === filter);
 
   const getEmptyStateText = () => {
@@ -129,15 +191,15 @@ export default function MontirPage() {
 
   const getTableHeaderTitle = () => {
     switch (filter) {
-      case 'dipanggil': return 'Pekerjaan Perlu Dilayani (Belum Mulai)';
+      case 'dipanggil': return 'Pekerjaan Perlu Dilayani (Belum Mulai / Revisi)';
       case 'sedang_dilayani': return 'Pekerjaan Sedang Dikerjakan';
-      case 'selesai': return 'Daftar Motor Sukses Diperbaiki';
+      case 'selesai': return 'Daftar Motor Sukses Diperbaiki & Diverifikasi';
       default: return 'Semua Riwayat & Daftar Pekerjaan';
     }
   };
 
   return (
-    <div className="panel-layout">
+    <div className="panel-layout" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <style>{`
         @keyframes slideDownFadeInOut {
           0% { transform: translate(-50%, -20px); opacity: 0; }
@@ -154,7 +216,7 @@ export default function MontirPage() {
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 9999,
-          background: 'rgba(22, 163, 74, 0.95)',
+          background: 'rgba(6, 182, 212, 0.95)',
           backdropFilter: 'blur(10px)',
           color: '#fff',
           padding: '16px 28px',
@@ -166,7 +228,6 @@ export default function MontirPage() {
           fontWeight: '700',
           fontSize: '1rem',
           animation: 'slideDownFadeInOut 3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
           pointerEvents: 'none'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.2)', width: '32px', height: '32px', borderRadius: '50%' }}>
@@ -174,17 +235,17 @@ export default function MontirPage() {
           </div>
           <div>
             <div style={{ fontSize: '0.8rem', opacity: 0.9, fontWeight: 500 }}>Login Berhasil</div>
-            <div>Selamat Datang, {user.nama || 'Mekanik'}! 👋</div>
+            <div>Selamat Datang, Mekanik {user.nama || ''}! 👋</div>
           </div>
         </div>
       )}
 
       {/* SIDEBAR COHESIVE TO ADMIN */}
-      <nav className="sidebar">
+      <nav className="sidebar" style={{ background: '#0f172a' }}>
         <div className="sidebar-logo">
-          <i className="fas fa-tools"></i>
+          <i className="fas fa-tools" style={{ background: 'rgba(6, 182, 212, 0.15)', color: '#06b6d4' }}></i>
           <div>
-            <h4>Antrian<span>Ku</span></h4>
+            <h4 style={{ color: '#fff', margin: 0, fontWeight: 800 }}>Bengkel<span>Ku</span></h4>
             <span className="role-badge" style={{ color: '#06b6d4' }}>Mekanik Panel</span>
           </div>
         </div>
@@ -211,13 +272,13 @@ export default function MontirPage() {
           </h5>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', padding: '8px 16px', borderRadius: 50, border: '1px solid #e2e8f0', color: '#0f172a', fontWeight: 800 }}>
             <i className="far fa-clock" style={{ color: '#06b6d4' }}></i>
-            {waktu.toLocaleTimeString('id-ID')}
+            {waktu.toLocaleTimeString('id-ID')} WIB
           </div>
         </header>
 
         <div className="content-area">
           <div className="fade-in">
-            {/* 3 STAT CARDS + ALL STATS ACTING AS INTERACTIVE FILTERS */}
+            {/* 4 STAT CARDS + ALL STATS ACTING AS INTERACTIVE FILTERS */}
             <div className="stats-row" style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 20 }}>
               
               {/* FILTER: SEMUA */}
@@ -316,9 +377,9 @@ export default function MontirPage() {
                     <tr>
                       <th className="px-4">No. Antrian</th>
                       <th>Nama Pelanggan</th>
-                      <th>Layanan / Kerusakan</th>
-                      <th>Kendaraan (Tipe/Merk)</th>
-                      <th>Waktu Giliran</th>
+                      <th>Layanan / Jasa</th>
+                      <th>Kendaraan (Merk/Tipe)</th>
+                      <th>Catatan / Keluhan</th>
                       <th className="text-center">Status</th>
                       <th className="text-center px-4" style={{ width: 220 }}>Tindakan Mekanik</th>
                     </tr>
@@ -344,7 +405,7 @@ export default function MontirPage() {
                             <td className="fw-semibold">{a.nama_pelanggan || 'Guest'}</td>
                             <td>{getLayananNames(a.layanan_id)}</td>
                             <td className="fw-bold text-dark">{a.kendaraan || '-'}</td>
-                            <td className="text-muted fw-bold">{a.slot_waktu ? a.slot_waktu.substring(0, 5) + ' WIB' : '-'}</td>
+                            <td className="text-muted">{a.catatan || '-'}</td>
                             <td className="text-center">
                               <span className={`badge-status ${s.cls}`}>
                                 <i className={`fas ${s.icon}`}></i> {s.label}
@@ -352,27 +413,32 @@ export default function MontirPage() {
                             </td>
                             <td className="text-center px-4">
                               <div className="action-group justify-content-center">
-                                {a.status === 'dipanggil' && (
+                                {['dipanggil', 'revisi_servis'].includes(a.status) && (
                                   <button 
                                     className="btn-submit-form" 
-                                    style={{ padding: '8px 16px', fontSize: '0.85rem', background: 'linear-gradient(135deg, #06b6d4, #0891b2)', boxShadow: '0 4px 10px rgba(6,182,212,0.2)' }}
+                                    style={{ padding: '8px 16px', fontSize: '0.85rem', background: 'linear-gradient(135deg, #06b6d4, #0891b2)', border: 'none', boxShadow: '0 4px 10px rgba(6,182,212,0.2)' }}
                                     onClick={() => handleAksi(a.id, 'dilayani')}
                                   >
-                                    <i className="fas fa-play"></i> Mulai Servis
+                                    <i className="fas fa-play"></i> Mulai Kerja
                                   </button>
                                 )}
                                 {a.status === 'sedang_dilayani' && (
                                   <button 
                                     className="btn-submit-form" 
-                                    style={{ padding: '8px 16px', fontSize: '0.85rem', background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 10px rgba(16,185,129,0.2)' }}
+                                    style={{ padding: '8px 16px', fontSize: '0.85rem', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', boxShadow: '0 4px 10px rgba(16,185,129,0.2)' }}
                                     onClick={() => handleAksi(a.id, 'selesai')}
                                   >
                                     <i className="fas fa-check-circle"></i> Selesai
                                   </button>
                                 )}
+                                {a.status === 'menunggu_verifikasi_pelanggan' && (
+                                  <span style={{ color: '#f97316', fontSize: '0.85rem', fontWeight: 800 }}>
+                                    <i className="fas fa-spinner fa-spin"></i> Menunggu Verifikasi
+                                  </span>
+                                )}
                                 {a.status === 'selesai' && (
                                   <span style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 800 }}>
-                                    <i className="fas fa-check-double"></i> Servis Selesai
+                                    <i className="fas fa-check-double"></i> Selesai & Diverifikasi
                                   </span>
                                 )}
                               </div>
@@ -388,6 +454,7 @@ export default function MontirPage() {
           </div>
         </div>
       </div>
+      <ConfirmModal {...confirmConfig} onCancel={closeConfirm} />
     </div>
   );
 }

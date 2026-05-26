@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../models/antrian_model.dart';
 
@@ -24,101 +25,123 @@ class AntrianCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppColors.radiusMd),
           border: Border.all(
-            color: antrian.isActive ? statusColor.withValues(alpha: 0.3) : Theme.of(context).dividerColor,
+            color: antrian.isActive ? statusColor.withValues(alpha: 0.2) : Theme.of(context).dividerColor.withValues(alpha: 0.5),
+            width: antrian.isActive ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppColors.radiusMd),
           child: Column(
             children: [
-              // Header: Nomor & Status
-              Row(
-                children: [
-                  // Nomor Antrian Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      antrian.nomorAntrian,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              if (antrian.isActive)
+                Container(
+                  height: 4,
+                  width: double.infinity,
+                  color: statusColor,
+                ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Header: Nomor & Status
+                    Row(
                       children: [
-                        Text(
-                          antrian.namaLayanan ?? 'Layanan',
-                          style: Theme.of(context).textTheme.titleMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        // Nomor Antrian Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            antrian.nomorAntrian,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: statusColor,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
                         ),
-                        SizedBox(height: 2),
-                        Text(
-                          Helpers.formatDate(antrian.tanggal),
-                          style: Theme.of(context).textTheme.bodySmall,
+                        const SizedBox(width: 14),
+                        // Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                antrian.namaLayanan ?? 'Layanan',
+                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.textMuted),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    Helpers.formatDate(antrian.tanggal),
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                  // Status chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Helpers.getStatusIcon(antrian.status), size: 14, color: statusColor),
-                        SizedBox(width: 4),
-                        Text(
-                          Helpers.getStatusLabel(antrian.status),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: statusColor,
+                        // Status chip
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(50),
+                            border: Border.all(color: statusColor.withValues(alpha: 0.2)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Helpers.getStatusIcon(antrian.status), size: 12, color: statusColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                Helpers.getStatusLabel(antrian.status),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: statusColor,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    // Detail section
+                    if (showDetail) ...[
+                      const SizedBox(height: 16),
+                      Container(height: 1, color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
+                      const SizedBox(height: 16),
+                      _buildDetailRow(context, Icons.schedule_rounded, 'Estimasi', '${antrian.estimasiMenit ?? 0} menit'),
+                      if (antrian.slotWaktu != null)
+                        _buildDetailRow(context, Icons.access_time_filled_rounded, 'Slot Waktu', Helpers.formatTime(antrian.slotWaktu)),
+                      if (antrian.totalHarga != null)
+                        _buildDetailRow(context, Icons.payments_rounded, 'Total', Helpers.formatRupiah(antrian.totalHarga)),
+                      if (antrian.kendaraan != null && antrian.kendaraan!.isNotEmpty)
+                        _buildDetailRow(context, Icons.directions_car_filled_rounded, 'Kendaraan', antrian.kendaraan!),
+                      if (antrian.catatan != null && antrian.catatan!.isNotEmpty)
+                        _buildDetailRow(context, Icons.notes_rounded, 'Catatan', antrian.catatan!),
+                    ],
+                  ],
+                ),
               ),
-              // Detail section
-              if (showDetail) ...[
-                SizedBox(height: 12),
-                const Divider(),
-                SizedBox(height: 8),
-                _buildDetailRow(context, Icons.schedule, 'Estimasi', '${antrian.estimasiMenit ?? 0} menit'),
-                if (antrian.slotWaktu != null)
-                  _buildDetailRow(context, Icons.access_time_filled, 'Slot Waktu', Helpers.formatTime(antrian.slotWaktu)),
-                if (antrian.totalHarga != null)
-                  _buildDetailRow(context, Icons.payments_outlined, 'Total', Helpers.formatRupiah(antrian.totalHarga)),
-                if (antrian.kendaraan != null && antrian.kendaraan!.isNotEmpty)
-                  _buildDetailRow(context, Icons.directions_car, 'Kendaraan', antrian.kendaraan!),
-                if (antrian.catatan != null && antrian.catatan!.isNotEmpty)
-                  _buildDetailRow(context, Icons.notes, 'Catatan', antrian.catatan!),
-              ],
             ],
           ),
         ),
@@ -128,22 +151,32 @@ class AntrianCard extends StatelessWidget {
 
   Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-          SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(6),
             ),
+            child: Icon(icon, size: 14, color: AppColors.textSecondary),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label.toUpperCase(),
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 0.5),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              ),
+            ],
           ),
         ],
       ),

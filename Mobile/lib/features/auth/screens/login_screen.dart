@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.directions_car_rounded,
+                      Icons.build_rounded,
                       size: 56,
                       color: AppColors.primary,
                     ),

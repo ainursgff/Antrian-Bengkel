@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 // Sangat berguna untuk mencegah serangan Brute Force / tebak password
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 menit
-  max: 5, // Maksimal 5 kali percobaan login yang gagal/berhasil
+  max: 500, // relaxed for development and testing
   message: {
     error: 'Terlalu banyak percobaan login, silakan coba lagi setelah 15 menit untuk alasan keamanan.'
   },

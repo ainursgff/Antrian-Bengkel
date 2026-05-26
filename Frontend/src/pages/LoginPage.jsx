@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [forgotStatus, setForgotStatus] = useState(''); // '', 'loading', 'input_new_password', 'submitting_new_password', 'success'
   const [newPassword, setNewPassword] = useState('');
   const [forgotError, setForgotError] = useState('');
+  const [resetToken, setResetToken] = useState('');
 
   const handleForgotSubmitEmail = async (e) => {
     e.preventDefault();
@@ -29,9 +30,12 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        // Extract resetToken from backend standardized response envelope
+        const tokenVal = data.data?.resetToken || data.resetToken || '';
+        setResetToken(tokenVal);
         setForgotStatus('input_new_password');
       } else {
-        setForgotError(data.error || 'Email tidak terdaftar di sistem');
+        setForgotError(data.message || data.error || 'Email tidak terdaftar di sistem');
         setForgotStatus('');
       }
     } catch {
@@ -48,13 +52,13 @@ export default function LoginPage() {
       const res = await fetch(`${CONFIG.API_BASE_URL}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail, password: newPassword })
+        body: JSON.stringify({ resetToken, password: newPassword })
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setForgotStatus('success');
       } else {
-        setForgotError(data.error || 'Gagal mengubah password');
+        setForgotError(data.message || data.error || 'Gagal mengubah password');
         setForgotStatus('input_new_password');
       }
     } catch {
@@ -73,21 +77,40 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
-      const data = await res.json();
+      
+      const data = await res.json().catch(() => null);
+      if (!data) {
+        setError(`Terjadi kesalahan parser: Server mengembalikan respon non-JSON (Status ${res.status}).`);
+        return;
+      }
+
       if (res.ok && data.success) {
-        localStorage.setItem('antrian_token', data.token);
-        localStorage.setItem('antrian_role', data.user.role);
-        localStorage.setItem('antrian_user', JSON.stringify(data.user));
+        const payload = data.data; // token and user are nested under data.data
+        localStorage.setItem('antrian_token', payload.token);
+        localStorage.setItem('antrian_role', payload.user.role);
+        localStorage.setItem('antrian_user', JSON.stringify(payload.user));
         sessionStorage.setItem('show_welcome_toast', 'true');
 
-        if (data.user.role === 'admin') navigate('/admin');
-        else if (data.user.role === 'montir') navigate('/montir');
+        if (payload.user.role === 'admin') navigate('/admin');
+        else if (payload.user.role === 'montir') navigate('/montir');
         else navigate('/');
       } else {
-        setError(data.message || 'Email atau password salah');
+        // Handle specific error codes returned by backend
+        const serverError = data.message || (data.errors && data.errors[0]?.message);
+        if (res.status === 401) {
+          setError(serverError || 'Email atau password salah. Silakan periksa kembali kredensial Anda.');
+        } else if (res.status === 429) {
+          setError(serverError || 'Batas percobaan login terlampaui. Silakan tunggu beberapa saat.');
+        } else {
+          setError(serverError || `Gagal login (Error ${res.status})`);
+        }
       }
-    } catch {
-      setError('Gagal terhubung ke server. Pastikan backend aktif.');
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Gagal terhubung ke server (Network Error/CORS Blocked). Pastikan backend aktif di port 5001.');
+      } else {
+        setError(err.message || 'Terjadi kesalahan tidak terduga saat mencoba login.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +122,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, background: 'rgba(249,115,22,0.15)', borderRadius: 20, marginBottom: 16 }}>
-            <i className="fas fa-car-side" style={{ fontSize: '1.8rem', color: '#f97316' }}></i>
+            <i className="fas fa-wrench" style={{ fontSize: '1.8rem', color: '#f97316' }}></i>
           </div>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: 0 }}>Selamat Datang</h1>
           <p style={{ color: '#94a3b8', marginTop: 8, fontSize: '0.95rem' }}>Masuk ke sistem antrian bengkel</p>
@@ -181,7 +204,7 @@ export default function LoginPage() {
               )}
               
               <div style={{ textAlign: 'center', marginTop: 24 }}>
-                <button type="button" onClick={() => { setShowForgot(false); setForgotStatus(''); setForgotEmail(''); setNewPassword(''); setForgotError(''); }} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <button type="button" onClick={() => { setShowForgot(false); setForgotStatus(''); setForgotEmail(''); setNewPassword(''); setForgotError(''); setResetToken(''); }} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   <i className="fas fa-arrow-left"></i> Kembali ke Login
                 </button>
               </div>

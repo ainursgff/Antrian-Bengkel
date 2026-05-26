@@ -410,14 +410,31 @@ class _AmbilAntrianScreenState extends State<AmbilAntrianScreen> {
                     l.namaLayanan,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                      fontSize: 15,
                       color: isSelected ? AppColors.primaryDark : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  SizedBox(height: 2),
-                  Text(
-                    '${l.estimasiMenit} menit',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  if (l.deskripsi != null && l.deskripsi!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      l.deskripsi!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isSelected ? AppColors.primaryDark.withValues(alpha: 0.7) : AppColors.textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.access_time_rounded, size: 14, color: isSelected ? AppColors.primary : AppColors.textSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${l.estimasiMenit} menit',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                      ),
+                    ],
                   ),
                 ],
               ),

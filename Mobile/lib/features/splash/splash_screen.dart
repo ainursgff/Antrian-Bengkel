@@ -72,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ],
               ),
               child: Icon(
-                Icons.directions_car_rounded,
+                Icons.build_rounded,
                 size: 56,
                 color: Colors.white,
               ),

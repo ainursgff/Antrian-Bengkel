@@ -50,11 +50,13 @@ class AppColors {
   static const Color infoLight = Color(0xFFEFF6FF);
 
   // Antrian Status Colors
-  static const Color statusMenunggu = Color(0xFFF97316);
-  static const Color statusDipanggil = Color(0xFF3B82F6);
-  static const Color statusDilayani = Color(0xFF8B5CF6);
-  static const Color statusSelesai = Color(0xFF22C55E);
-  static const Color statusDibatalkan = Color(0xFFEF4444);
+  static const Color statusMenunggu = Color(0xFFD97706);
+  static const Color statusDipanggil = Color(0xFF2563EB);
+  static const Color statusDilayani = Color(0xFFEA580C);
+  static const Color statusSelesai = Color(0xFF16A34A);
+  static const Color statusDibatalkan = Color(0xFFDC2626);
+  static const Color statusRevisi = Color(0xFF0EA5E9);
+  static const Color statusVerifikasi = Color(0xFFF97316);
 
   // Spacing constants
   static const double spacingXs = 4;
@@ -65,8 +67,8 @@ class AppColors {
   static const double spacing2xl = 48;
 
   // Radius constants
-  static const double radiusSm = 8;
-  static const double radiusMd = 14;
-  static const double radiusLg = 20;
-  static const double radiusXl = 28;
+  static const double radiusSm = 10;
+  static const double radiusMd = 16;
+  static const double radiusLg = 24;
+  static const double radiusXl = 32;
 }

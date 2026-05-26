@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
+import 'date_helper.dart';
 
 class Helpers {
   Helpers._();
@@ -13,18 +14,12 @@ class Helpers {
     return formatter.format(number);
   }
 
-  // Format date
+  // Format date using DateHelper
   static String formatDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return '-';
-    try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('dd MMM yyyy', 'id_ID').format(date);
-    } catch (_) {
-      return dateStr;
-    }
+    return DateHelper.getRelativeDayLabel(dateStr);
   }
 
-  // Format date relative (e.g. "2 jam lalu")
+  // Format date relative
   static String formatRelativeDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return '-';
     try {
@@ -36,7 +31,7 @@ class Helpers {
       if (diff.inMinutes < 60) return '${diff.inMinutes} menit lalu';
       if (diff.inHours < 24) return '${diff.inHours} jam lalu';
       if (diff.inDays < 7) return '${diff.inDays} hari lalu';
-      return formatDate(dateStr);
+      return DateHelper.formatIndonesian(dateStr);
     } catch (_) {
       return dateStr;
     }
@@ -59,6 +54,8 @@ class Helpers {
       case 'menunggu': return AppColors.statusMenunggu;
       case 'dipanggil': return AppColors.statusDipanggil;
       case 'sedang_dilayani': return AppColors.statusDilayani;
+      case 'menunggu_verifikasi_pelanggan': return AppColors.statusVerifikasi;
+      case 'revisi_servis': return AppColors.statusRevisi;
       case 'selesai': return AppColors.statusSelesai;
       case 'dibatalkan': return AppColors.statusDibatalkan;
       default: return AppColors.textMuted;
@@ -69,8 +66,10 @@ class Helpers {
   static String getStatusLabel(String status) {
     switch (status.toLowerCase()) {
       case 'menunggu': return 'Menunggu';
-      case 'dipanggil': return 'Dipanggil';
-      case 'sedang_dilayani': return 'Sedang Dilayani';
+      case 'dipanggil': return 'Dipanggil!';
+      case 'sedang_dilayani': return 'Sedang Diservis';
+      case 'menunggu_verifikasi_pelanggan': return 'Persetujuan Pelanggan';
+      case 'revisi_servis': return 'Revisi Servis';
       case 'selesai': return 'Selesai';
       case 'dibatalkan': return 'Dibatalkan';
       default: return status;
@@ -80,9 +79,11 @@ class Helpers {
   // Get status icon
   static IconData getStatusIcon(String status) {
     switch (status.toLowerCase()) {
-      case 'menunggu': return Icons.hourglass_top_rounded;
-      case 'dipanggil': return Icons.campaign_rounded;
-      case 'sedang_dilayani': return Icons.build_rounded;
+      case 'menunggu': return Icons.history_toggle_off_rounded;
+      case 'dipanggil': return Icons.notifications_active_rounded;
+      case 'sedang_dilayani': return Icons.build_circle_rounded;
+      case 'menunggu_verifikasi_pelanggan': return Icons.person_search_rounded;
+      case 'revisi_servis': return Icons.published_with_changes_rounded;
       case 'selesai': return Icons.check_circle_rounded;
       case 'dibatalkan': return Icons.cancel_rounded;
       default: return Icons.info_rounded;

@@ -2,17 +2,23 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../../services/auth_storage.dart';
 
+import '../config/env_config.dart';
+
 class DioClient {
   static DioClient? _instance;
   late final Dio dio;
 
   DioClient._internal() {
+    final baseUrl = EnvConfig.baseUrl;
+    final formattedBaseUrl = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+    final timeout = Duration(seconds: EnvConfig.apiTimeoutSeconds);
+
     dio = Dio(
       BaseOptions(
-        baseUrl: 'http://10.251.130.76:5001/api/',
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
-        sendTimeout: const Duration(seconds: 15),
+        baseUrl: formattedBaseUrl,
+        connectTimeout: timeout,
+        receiveTimeout: timeout,
+        sendTimeout: timeout,
         responseType: ResponseType.json,
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +50,7 @@ class DioClient {
     );
 
     // Retry Interceptor — auto retry on timeout/network errors
-    dio.interceptors.add(_RetryInterceptor(dio: dio, maxRetries: 2));
+    dio.interceptors.add(_RetryInterceptor(dio: dio, maxRetries: EnvConfig.maxRetries));
 
     // Logging interceptor (debug only)
     if (kDebugMode) {
@@ -80,8 +86,8 @@ class _RetryInterceptor extends Interceptor {
   _RetryInterceptor({
     required this.dio,
     this.maxRetries = 2,
-    this.retryDelay = const Duration(seconds: 1),
-  });
+    Duration retryDelay = const Duration(seconds: 1),
+  }) : retryDelay = retryDelay;
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {

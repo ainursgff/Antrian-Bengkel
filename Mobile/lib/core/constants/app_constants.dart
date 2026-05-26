@@ -3,7 +3,7 @@ import '../config/env_config.dart';
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'Antrian Bengkel';
+  static const String appName = 'BengkelKu';
   static const String appTagline = 'Sistem Antrian Digital Premium';
 
   // API Base URL — using EnvConfig

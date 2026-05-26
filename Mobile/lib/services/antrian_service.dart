@@ -4,6 +4,7 @@ import '../core/network/dio_client.dart';
 import '../models/antrian_model.dart';
 import '../models/layanan_model.dart';
 import '../models/notifikasi_model.dart';
+import '../models/jadwal_model.dart';
 import '../models/kategori_kendaraan_model.dart';
 
 class AntrianService {
@@ -79,6 +80,40 @@ class AntrianService {
     }
   }
 
+  // PUT /api/antrian/:id/verifikasi
+  Future<Map<String, dynamic>> verifikasiAntrian(int id) async {
+    try {
+      final response = await _dio.put('/antrian/$id/verifikasi');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      if (e.response?.data is Map) {
+        return {
+          'success': false,
+          'error': (e.response!.data as Map)['error'] ?? 'Gagal memverifikasi',
+        };
+      }
+      return {'success': false, 'error': 'Tidak dapat terhubung ke server'};
+    }
+  }
+
+  // PUT /api/antrian/:id/revisi
+  Future<Map<String, dynamic>> revisiAntrian(int id, String catatanRevisi) async {
+    try {
+      final response = await _dio.put('/antrian/$id/revisi', data: {
+        'catatan_revisi': catatanRevisi,
+      });
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      if (e.response?.data is Map) {
+        return {
+          'success': false,
+          'error': (e.response!.data as Map)['error'] ?? 'Gagal mengajukan revisi',
+        };
+      }
+      return {'success': false, 'error': 'Tidak dapat terhubung ke server'};
+    }
+  }
+
   // GET /api/layanan — daftar layanan aktif
   Future<List<LayananModel>> fetchLayanan() async {
     try {
@@ -107,7 +142,23 @@ class AntrianService {
       }
       return [];
     } catch (e) {
-      debugPrint('Error fetchKategoriKendaraan: \$e');
+      debugPrint('Error fetchKategoriKendaraan: $e');
+      return [];
+    }
+  }
+
+  // GET /api/jadwal
+  Future<List<JadwalModel>> fetchJadwal() async {
+    try {
+      final response = await _dio.get('/jadwal');
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((json) => JadwalModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Error fetchJadwal: $e');
       return [];
     }
   }

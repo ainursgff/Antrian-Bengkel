@@ -19,14 +19,24 @@ export default function RegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+      if (!data) {
+        setError(`Terjadi kesalahan parser: Server mengembalikan respon non-JSON (Status ${res.status}).`);
+        return;
+      }
+
       if (res.ok && data.success) {
         setShowSuccessModal(true);
       } else {
-        setError(data.error || 'Gagal mendaftar');
+        const errorMsg = data.message || (data.errors && data.errors[0]?.message) || 'Gagal mendaftar';
+        setError(errorMsg);
       }
-    } catch {
-      setError('Gagal terhubung ke server. Pastikan backend aktif.');
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Gagal terhubung ke server (Network Error/CORS Blocked). Pastikan backend aktif di port 5001.');
+      } else {
+        setError(err.message || 'Terjadi kesalahan tidak terduga saat mencoba mendaftar.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +49,7 @@ export default function RegisterPage() {
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, background: 'rgba(249,115,22,0.15)', borderRadius: 20, marginBottom: 16 }}>
-              <i className="fas fa-car-side" style={{ fontSize: '1.8rem', color: '#f97316' }}></i>
+              <i className="fas fa-wrench" style={{ fontSize: '1.8rem', color: '#f97316' }}></i>
             </div>
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', margin: 0 }}>Daftar Akun</h1>
             <p style={{ color: '#94a3b8', marginTop: 8, fontSize: '0.95rem' }}>Buat akun untuk mulai ambil antrian</p>
